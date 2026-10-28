@@ -28,7 +28,7 @@ namespace P2D.Domain
             {
                 id = "magma", name = "Magma Scale", dropElement = Element.Fire,
                 twoPiece = new[] { new StatModifier(StatType.ATK, ModType.Percent, 0.12) },
-                twoPieceText = "ATK +12%", fourPieceText = "A crit triggers a fire burst for 60% ATK (once per action)",
+                twoPieceText = "ATK +12%", fourPieceText = "A crit triggers a fire burst for 60% ATK (once per second)",
             },
             new EquipmentSet
             {
@@ -93,7 +93,7 @@ namespace P2D.Domain
                 if (pair.Value < FourPiece) continue;
                 switch (pair.Key)
                 {
-                    case "magma": traits.critBurstMultiplier = 0.60; break;
+                    case "magma": traits.critBurstMultiplier = 0.60; traits.critBurstCooldownSeconds = 1; break;
                     case "glacial": traits.shieldedReflectPercent = 0.40; break;
                     case "storm": traits.dodgeCounterMultiplier = 1.00; break;
                     case "star": traits.skillElementBuff = 0.40; traits.skillElementBuffSeconds = 5; break;

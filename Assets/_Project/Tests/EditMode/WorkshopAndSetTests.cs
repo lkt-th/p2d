@@ -158,20 +158,28 @@ namespace P2D.Domain.Tests
         public void MagmaFourPiece_CritsAddABurst()
         {
             var plain = new BattleSimulation(Setup(new PathBattleTraits(), 1.0, Dummy()));
-            var burst = new BattleSimulation(Setup(new PathBattleTraits { critBurstMultiplier = 0.6 }, 1.0, Dummy()));
+            var burst = new BattleSimulation(Setup(new PathBattleTraits { critBurstMultiplier = 0.6, critBurstCooldownSeconds = 1 }, 1.0, Dummy()));
             for (int i = 0; i < 300; i++) { plain.Step(); burst.Step(); }
             Assert.AreEqual(Count(plain, BattleEventType.EnemyHit) * 2, Count(burst, BattleEventType.EnemyHit), "each crit adds one burst, bursts don't chain");
         }
 
         [Test]
-        public void MagmaFourPiece_BurstsOncePerAction()
+        public void MagmaFourPiece_BurstHasOneSecondCooldown()
         {
-            var setup = Setup(new PathBattleTraits { critBurstMultiplier = 0.6 }, 1.0, Dummy());
+            var setup = Setup(new PathBattleTraits { critBurstMultiplier = 0.6, critBurstCooldownSeconds = 1 }, 1.0, Dummy());
             setup.skills.Add(SkillCatalog.Find("gale_claws")); // 4 hits, all crits at 100% crit rate
             var sim = new BattleSimulation(setup);
             sim.Enqueue(BattleInputType.UseSkill, 0);
             sim.Step();
             Assert.AreEqual(4 + 1, Count(sim, BattleEventType.EnemyHit), "4 claw hits + a single burst");
+
+            // Fast attacks: at SPD 400 the dragon swings every ~0.4 s but bursts at most once per second.
+            var fast = Setup(new PathBattleTraits { critBurstMultiplier = 0.6, critBurstCooldownSeconds = 1 }, 1.0, Dummy());
+            fast.dragon.speed = 400;
+            var quick = new BattleSimulation(fast);
+            for (int i = 0; i < BattleSimulation.ToTicks(10); i++) quick.Step();
+            int bursts = Count(quick, BattleEventType.EnemyHit) - (int)(10 / CombatFormulas.AttackInterval(400));
+            Assert.LessOrEqual(bursts, 11);
         }
 
         [Test]

@@ -147,6 +147,7 @@ namespace P2D.Domain
 
         // 4-piece set bonuses (SetCatalog)
         public double critBurstMultiplier;
+        public double critBurstCooldownSeconds;
         public double shieldedReflectPercent;
         public double dodgeCounterMultiplier;
         public double skillElementBuff;

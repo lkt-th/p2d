@@ -32,14 +32,15 @@ namespace P2D.Domain
             var b2 = new BalanceScenario { title = "สัปดาห์ที่ 3 · Stage 2 · มหากาพย์ +9", bracket = 2 };
             b2.builds.Add(Build("B2 Fury", 35, 2, Rarity.Epic, 9, GrowthPath.Fury, "kyren", 4, "flame_claw", "searing_breath"));
             b2.builds.Add(Build("B2 Bastion", 35, 2, Rarity.Epic, 9, GrowthPath.Bastion, "brogan", 4, "scale_guard", "tail_slam"));
-            b2.builds.Add(Build("B2 Tempest", 35, 2, Rarity.Epic, 9, GrowthPath.Tempest, "lira", 4, "gale_claws", "cyclone_step"));
+            b2.builds.Add(Build("B2 Tempest", 35, 2, Rarity.Epic, 9, GrowthPath.Tempest, "zephyr", 4, "gale_claws", "cyclone_step"));
             b2.builds.Add(Build("B2 Arcane", 35, 2, Rarity.Epic, 9, GrowthPath.Arcane, "selena", 4, "rune_orb", "star_bolt"));
+            b2.builds.Add(Build("B2 Tempest (ลีร่า SR)", 35, 2, Rarity.Epic, 9, GrowthPath.Tempest, "lira", 4, "gale_claws", "cyclone_step"));
             b2.builds.Add(Build("B2 Fury ของต่ำ", 35, 2, Rarity.Rare, 6, GrowthPath.Fury, "kyren", 2, "flame_claw"));
 
             var b4 = new BalanceScenario { title = "สัปดาห์ที่ 7–12 · Stage 4 · ตำนาน +12", bracket = 4 };
             b4.builds.Add(Build("B4 Fury", 75, 4, Rarity.Legendary, 12, GrowthPath.Fury, "kyren", 5, "flame_claw", "searing_breath", "executioner_bite"));
             b4.builds.Add(Build("B4 Bastion", 75, 4, Rarity.Legendary, 12, GrowthPath.Bastion, "brogan", 5, "scale_guard", "tail_slam", "stone_mend"));
-            b4.builds.Add(Build("B4 Tempest", 75, 4, Rarity.Legendary, 12, GrowthPath.Tempest, "lira", 5, "gale_claws", "cyclone_step", "wind_shear"));
+            b4.builds.Add(Build("B4 Tempest", 75, 4, Rarity.Legendary, 12, GrowthPath.Tempest, "zephyr", 5, "gale_claws", "cyclone_step", "wind_shear"));
             b4.builds.Add(Build("B4 Arcane", 75, 4, Rarity.Legendary, 12, GrowthPath.Arcane, "selena", 5, "rune_orb", "star_bolt", "time_mirror"));
             var hybrid = Build("B4 Fury+Tempest", 75, 4, Rarity.Legendary, 12, GrowthPath.Fury, "kyren", 5, "flame_claw", "searing_breath", "gale_claws");
             hybrid.slotPaths[(int)EquipSlot.Horn] = GrowthPath.Tempest;
@@ -50,7 +51,7 @@ namespace P2D.Domain
             var b5 = new BalanceScenario { title = "6 เดือน+ · Stage 5 · เทพนิยาย +15 (มีสกิลขั้นสุด)", bracket = 5 };
             b5.builds.Add(Build("B5 Fury", 100, 5, Rarity.Mythic, 15, GrowthPath.Fury, "kyren", 5, "flame_claw", "executioner_bite", "inferno_cataclysm"));
             b5.builds.Add(Build("B5 Bastion", 100, 5, Rarity.Mythic, 15, GrowthPath.Bastion, "brogan", 5, "tail_slam", "stone_mend", "eternal_bastion"));
-            b5.builds.Add(Build("B5 Tempest", 100, 5, Rarity.Mythic, 15, GrowthPath.Tempest, "lira", 5, "gale_claws", "wind_shear", "thousand_wings"));
+            b5.builds.Add(Build("B5 Tempest", 100, 5, Rarity.Mythic, 15, GrowthPath.Tempest, "zephyr", 5, "gale_claws", "wind_shear", "thousand_wings"));
             b5.builds.Add(Build("B5 Arcane", 100, 5, Rarity.Mythic, 15, GrowthPath.Arcane, "selena", 5, "rune_orb", "time_mirror", "galaxy_rain"));
 
             return new List<BalanceScenario> { b2, b4, b5 };

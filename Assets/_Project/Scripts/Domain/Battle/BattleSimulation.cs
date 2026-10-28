@@ -67,7 +67,9 @@ namespace P2D.Domain
         int frozenTicksLeft;
         int dodgeBuffTicksLeft;
         int reflectTicksLeft;
+        int speedBuffTicksLeft;
         double attackBuff;
+        double speedBuff;
         double dodgeBuff;
         double reflectBuff;
 
@@ -127,6 +129,9 @@ namespace P2D.Domain
         public static int ToTicks(double seconds) => (int)Math.Round(seconds * TicksPerSecond);
 
         static int AttackIntervalTicks(double speed) => Math.Max(1, ToTicks(CombatFormulas.AttackInterval(speed)));
+
+        int CurrentAttackIntervalTicks() =>
+            Math.Max(1, (int)Math.Round(AttackIntervalTicks(setup.dragon.speed) / (1 + speedBuff)));
 
         /// <summary>Queues an input for the next tick.</summary>
         public void Enqueue(BattleInputType type, int index = 0) => pending.Add(new BattleInput(Tick + 1, type, index));
@@ -293,6 +298,11 @@ namespace P2D.Domain
                     frozenTicksLeft = ToTicks(command.durationSeconds);
                     Emit(BattleEventType.Frozen, -1, command.durationSeconds);
                     break;
+                case CommandKind.SpeedBuff:
+                    speedBuff = command.value;
+                    speedBuffTicksLeft = ToTicks(command.durationSeconds);
+                    dragonAttackTimer = Math.Min(dragonAttackTimer, CurrentAttackIntervalTicks());
+                    break;
                 case CommandKind.ResetCooldown:
                     int longest = -1;
                     for (int i = 0; i < skillCooldowns.Length; i++)
@@ -357,6 +367,7 @@ namespace P2D.Domain
             if (shieldTicksLeft > 0 && --shieldTicksLeft == 0) Shield = 0;
             if (dodgeBuffTicksLeft > 0 && --dodgeBuffTicksLeft == 0) dodgeBuff = 0;
             if (reflectTicksLeft > 0 && --reflectTicksLeft == 0) reflectBuff = 0;
+            if (speedBuffTicksLeft > 0 && --speedBuffTicksLeft == 0) speedBuff = 0;
 
             if (timeLimitTicks > 0 && Tick >= timeLimitTicks)
                 Finish(BattleOutcome.Timeout);
@@ -381,7 +392,7 @@ namespace P2D.Domain
         void DragonBasicAttack()
         {
             if (--dragonAttackTimer > 0) return;
-            dragonAttackTimer = AttackIntervalTicks(setup.dragon.speed);
+            dragonAttackTimer = CurrentAttackIntervalTicks();
             basicAttackCount++;
 
             var basic = new HitOptions { multiplier = 1.0, maxHpDamage = traits.basicMaxHpDamage };

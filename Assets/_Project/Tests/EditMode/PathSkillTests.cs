@@ -249,6 +249,22 @@ namespace P2D.Domain.Tests
             Assert.AreEqual(plain + plain / 4, doubled);
         }
 
+        [Test]
+        public void ZephyrCommand_SpeedsUpBasicAttacks()
+        {
+            var setup = Setup(11, new SkillData[0], new PathBattleTraits(), Dummy());
+            var plain = new BattleSimulation(setup);
+            for (int i = 0; i < BattleSimulation.ToTicks(6); i++) plain.Step();
+
+            setup.command = RiderCatalog.Command(RiderCatalog.Find("zephyr").commandSkillId);
+            setup.startingGauge = 100;
+            var hasted = new BattleSimulation(setup);
+            hasted.Enqueue(BattleInputType.UseCommand);
+            for (int i = 0; i < BattleSimulation.ToTicks(6); i++) hasted.Step();
+
+            Assert.Greater(Count(hasted, BattleEventType.EnemyHit), Count(plain, BattleEventType.EnemyHit));
+        }
+
         static EnemySpec Imp() => new EnemySpec
         {
             id = "imp", level = 34, element = Element.Fire, hp = 6000, attack = 300, defense = 150, attackIntervalSeconds = 2,

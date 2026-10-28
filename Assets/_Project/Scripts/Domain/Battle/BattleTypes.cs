@@ -18,6 +18,9 @@ namespace P2D.Domain
 
         /// <summary>Clears the cooldown of the skill that has the longest wait left.</summary>
         ResetCooldown,
+
+        /// <summary>Basic attacks come faster: interval ÷ (1 + value) for the duration.</summary>
+        SpeedBuff,
     }
 
     public enum BattleEventType
@@ -149,7 +152,7 @@ namespace P2D.Domain
         public string id;
         public CommandKind kind;
 
-        /// <summary>AttackBuff: +ATK fraction. Shield: fraction of max HP. DamageAll: skill multiplier.</summary>
+        /// <summary>AttackBuff: +ATK fraction. Shield: fraction of max HP. DamageAll: skill multiplier. SpeedBuff: +attack speed.</summary>
         public double value;
         public double durationSeconds;
     }

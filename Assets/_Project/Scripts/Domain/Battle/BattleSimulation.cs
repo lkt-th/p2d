@@ -71,6 +71,9 @@ namespace P2D.Domain
         int dodgeBuffTicksLeft;
         int reflectTicksLeft;
         int elementBuffTicksLeft;
+
+        /// <summary>Magma 4-piece: at most one burst per action (skill, basic attack or command).</summary>
+        bool burstUsedThisAction;
         double elementBuff;
         int speedBuffTicksLeft;
         double attackBuff;
@@ -226,6 +229,7 @@ namespace P2D.Domain
             if (!IsSkillReady(slot)) return false;
             var skill = setup.skills[slot];
             bool echo = EchoReady;
+            burstUsedThisAction = false;
 
             var hit = new HitOptions
             {
@@ -290,6 +294,7 @@ namespace P2D.Domain
             if (!IsCommandReady) return false;
             var command = setup.command;
             Gauge = 0;
+            burstUsedThisAction = false;
             Emit(BattleEventType.CommandUsed, -1, (int)command.kind);
             switch (command.kind)
             {
@@ -405,6 +410,7 @@ namespace P2D.Domain
             if (--dragonAttackTimer > 0) return;
             dragonAttackTimer = CurrentAttackIntervalTicks();
             basicAttackCount++;
+            burstUsedThisAction = false;
 
             var basic = new HitOptions { multiplier = 1.0, maxHpDamage = traits.basicMaxHpDamage };
             HitEnemy(CurrentTarget(), basic);
@@ -539,8 +545,11 @@ namespace P2D.Domain
 
             if (hit.burnPerSecond > 0) ApplyBurn(e, hit.burnPerSecond, hit.burnSeconds);
             if (crit && traits.critBurnPerSecond > 0) ApplyBurn(e, traits.critBurnPerSecond, traits.critBurnSeconds);
-            if (crit && !hit.isProc && traits.critBurstMultiplier > 0)
+            if (crit && !hit.isProc && traits.critBurstMultiplier > 0 && !burstUsedThisAction)
+            {
+                burstUsedThisAction = true;
                 HitEnemy(index, new HitOptions { multiplier = traits.critBurstMultiplier, isProc = true });
+            }
         }
 
         void DamageEnemy(int index, EnemyRuntime e, double damage, bool crit, BattleEventType type)

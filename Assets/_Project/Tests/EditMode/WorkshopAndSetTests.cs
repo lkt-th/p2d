@@ -164,6 +164,17 @@ namespace P2D.Domain.Tests
         }
 
         [Test]
+        public void MagmaFourPiece_BurstsOncePerAction()
+        {
+            var setup = Setup(new PathBattleTraits { critBurstMultiplier = 0.6 }, 1.0, Dummy());
+            setup.skills.Add(SkillCatalog.Find("gale_claws")); // 4 hits, all crits at 100% crit rate
+            var sim = new BattleSimulation(setup);
+            sim.Enqueue(BattleInputType.UseSkill, 0);
+            sim.Step();
+            Assert.AreEqual(4 + 1, Count(sim, BattleEventType.EnemyHit), "4 claw hits + a single burst");
+        }
+
+        [Test]
         public void GlacialFourPiece_ReflectsOnlyWhileShielded()
         {
             var traits = new PathBattleTraits { shieldedReflectPercent = 0.2 };

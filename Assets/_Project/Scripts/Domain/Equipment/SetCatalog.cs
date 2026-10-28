@@ -28,13 +28,13 @@ namespace P2D.Domain
             {
                 id = "magma", name = "Magma Scale", dropElement = Element.Fire,
                 twoPiece = new[] { new StatModifier(StatType.ATK, ModType.Percent, 0.12) },
-                twoPieceText = "ATK +12%", fourPieceText = "Crits trigger a fire burst for 60% ATK",
+                twoPieceText = "ATK +12%", fourPieceText = "A crit triggers a fire burst for 60% ATK (once per action)",
             },
             new EquipmentSet
             {
                 id = "glacial", name = "Glacial Thorn", dropElement = Element.Water,
                 twoPiece = new[] { new StatModifier(StatType.DEF, ModType.Percent, 0.15) },
-                twoPieceText = "DEF +15%", fourPieceText = "Reflect 20% of damage taken while shielded",
+                twoPieceText = "DEF +15%", fourPieceText = "Reflect 40% of damage taken while shielded",
             },
             new EquipmentSet
             {
@@ -46,7 +46,7 @@ namespace P2D.Domain
             {
                 id = "star", name = "Ancient Star", dropElement = Element.Earth,
                 twoPiece = new[] { new StatModifier(StatType.SkillHaste, ModType.Flat, 8) },
-                twoPieceText = "Skill Haste +8", fourPieceText = "After a skill, Element DMG +25% for 5 s",
+                twoPieceText = "Skill Haste +8", fourPieceText = "After a skill, Element DMG +40% for 5 s",
             },
         };
 
@@ -94,9 +94,9 @@ namespace P2D.Domain
                 switch (pair.Key)
                 {
                     case "magma": traits.critBurstMultiplier = 0.60; break;
-                    case "glacial": traits.shieldedReflectPercent = 0.20; break;
+                    case "glacial": traits.shieldedReflectPercent = 0.40; break;
                     case "storm": traits.dodgeCounterMultiplier = 1.00; break;
-                    case "star": traits.skillElementBuff = 0.25; traits.skillElementBuffSeconds = 5; break;
+                    case "star": traits.skillElementBuff = 0.40; traits.skillElementBuffSeconds = 5; break;
                 }
             }
         }

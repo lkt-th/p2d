@@ -68,10 +68,10 @@ Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules
 - Starter kit (`GameActions.EnsureStarterKit`) sets the dragon to Lv 10 and gives 3 scales as a stand-in for
   story chapters 1–2 (a Lv 1 dragon loses spire floor 1).
 - Not built yet: real art/prefabs, IAP (packs, Dragon Pass), story mode, backend (UGS), cloud save, nest income
-  numbers, set builds in the balance simulator, path visuals, URP (the greybox uses the built-in pipeline).
+  numbers, path visuals, URP (the greybox uses the built-in pipeline).
 
 ## Open decisions (ask the user)
 
 - Balance watch items: Arcane still clears fastest; Bastion boss fights take 80–107 s of a 120 s limit;
-  Magma 4-piece is too strong on multi-hit Tempest, Ancient Star and Glacial are weak (proposals in balance-report.md).
+  Magma 4-piece is still too strong on Tempest (frequent crits) after round 4; next proposal in balance-report.md.
 - PvP or not; always-online or partly offline.

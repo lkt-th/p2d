@@ -19,12 +19,15 @@ namespace P2D.Presentation.Screens
             var loadout = GameActions.ToLoadout(Save);
             double power = LoadoutCalculator.Compute(loadout).PowerScore();
 
-            var hero = UiKit.Row(list, 330, UiKit.Surface);
-            var art = UiKit.Slice(UiKit.Fill(hero, "Dragon"), 0.3f, 0.7f, 30);
+            // Name on top, dragon placeholder in the middle band, stage/power underneath — no overlap.
+            var hero = UiKit.Row(list, 420, UiKit.Surface);
+            var name = UiKit.Rect(hero, "Name", new Vector2(0, 0.80f), Vector2.one, Vector2.zero, Vector2.zero);
+            UiKit.Label(name, d.name, 56, TextAnchor.MiddleCenter);
+            var art = UiKit.Rect(hero, "Dragon", new Vector2(0.36f, 0.30f), new Vector2(0.64f, 0.78f), Vector2.zero, Vector2.zero);
             art.gameObject.AddComponent<UnityEngine.UI.Image>().color = new Color(0.3f, 0.55f, 0.9f);
-            Cell(hero, d.name, 0, 1, 56, TextAnchor.UpperCenter);
-            Cell(hero, StageName(d.stage) + "  ·  Lv " + d.level + " / " + DragonRules.LevelCap(d.stage)
-                + "\nPower " + power.ToString("N0"), 0, 1, 32, TextAnchor.LowerCenter);
+            var info = UiKit.Rect(hero, "Info", Vector2.zero, new Vector2(1, 0.28f), Vector2.zero, Vector2.zero);
+            UiKit.Label(info, StageName(d.stage) + "  ·  Lv " + d.level + " / " + DragonRules.LevelCap(d.stage)
+                + "\nPower " + power.ToString("N0"), 32, TextAnchor.MiddleCenter);
 
             var rider = Save.FindRider(d.mainRiderId);
             var riderProfile = RiderCatalog.Find(d.mainRiderId);

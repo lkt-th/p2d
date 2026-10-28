@@ -462,6 +462,9 @@ namespace P2D.Presentation.Battle
 
         void OnBattleEvent(BattleEvent e)
         {
+            // After Skip() every remaining event arrives at once: only show the last half second.
+            if (runner.Simulation.Tick - e.tick > BattleSimulation.TicksPerSecond / 2) return;
+
             switch (e.type)
             {
                 case BattleEventType.EnemyHit:

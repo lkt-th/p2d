@@ -63,6 +63,8 @@ Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules
     `BattleSimulation` via `BattleRunner`. Opened directly it is a sandbox (BUILD cycles sample builds);
     started from the Spire tab it plays `BattleHandoff.Pending` and reports back (rewards applied, Main reloads).
   - PlayMode tests use `SaveManager.StorageOverride = new MemorySaveStorage()` so they never touch the real save.
+  - Screenshots for visual review: run the explicit PlayMode test `P2D.PlayMode.Tests.ScreenshotCapture`
+    (`-testFilter`); PNGs go to `Logs/Screenshots` or `P2D_SCREENSHOT_DIR`. Look at them after UI changes.
 - UI text is English for now: the built-in legacy font may not render Thai. Thai needs a Thai font asset
   (`docs/Unity-Tech.md` §8) before localization.
 - Starter kit (`GameActions.EnsureStarterKit`) sets the dragon to Lv 10 and gives 3 scales as a stand-in for

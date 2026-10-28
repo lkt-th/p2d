@@ -56,6 +56,7 @@ namespace P2D.Domain
             save.wallet.forgeStones += 100;
             save.wallet.dragonEssence += 20;
             save.wallet.pactSigils += 10;
+            save.wallet.crystals += 300;
             // Stand-ins for story chapters 1–2 until the story mode exists: the spire unlocks after
             // chapter 2, by which point the dragon is around Lv 10 (Balance §8) and has 3 scales (§1.4).
             save.wallet.ancientScales += 3;

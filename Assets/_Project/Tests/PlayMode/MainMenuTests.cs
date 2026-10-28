@@ -66,6 +66,83 @@ namespace P2D.PlayMode.Tests
             Assert.AreEqual(10 * GameActions.ExpPerEssence, menu.Save.dragon.exp);
         }
 
+        static Button FindButton(string labelStart)
+        {
+            foreach (var b in Object.FindObjectsByType<Button>(FindObjectsSortMode.None))
+                if (b.gameObject.activeInHierarchy && b.GetComponentInChildren<Text>().text.StartsWith(labelStart)) return b;
+            return null;
+        }
+
+        [UnityTest]
+        public IEnumerator HuntScreen_AutoHunt_SpendsStaminaAndPays()
+        {
+            var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
+            yield return null;
+            menu.Show(ScreenId.Hunt);
+            yield return null;
+
+            int stamina = menu.Save.hunt.stamina;
+            long gold = menu.Save.wallet.gold;
+            var hunt = FindButton("AUTO HUNT x1");
+            Assert.IsNotNull(hunt);
+            hunt.onClick.Invoke();
+            yield return null;
+            Assert.AreEqual(stamina - HuntRules.StaminaCost, menu.Save.hunt.stamina);
+            Assert.Greater(menu.Save.wallet.gold, gold);
+        }
+
+        [UnityTest]
+        public IEnumerator ShopScreen_StaminaRefill_UsesCrystals()
+        {
+            var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
+            yield return null;
+            menu.Show(ScreenId.Shop);
+            yield return null;
+
+            long crystals = menu.Save.wallet.crystals;
+            var refill = FindButton(ShopActions.StaminaRefillCrystals + " crystals");
+            Assert.IsNotNull(refill);
+            refill.onClick.Invoke();
+            yield return null;
+            Assert.AreEqual(crystals - ShopActions.StaminaRefillCrystals, menu.Save.wallet.crystals);
+        }
+
+        [UnityTest]
+        public IEnumerator HuntBattle_RoundTrip_ReturnsToHunt()
+        {
+            var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
+            yield return null;
+            menu.Show(ScreenId.Hunt);
+            yield return null;
+            FindButton("FIGHT").onClick.Invoke();
+
+            GreyboxBattleBootstrap battle = null;
+            for (int i = 0; i < 120 && battle == null; i++)
+            {
+                yield return null;
+                battle = Object.FindAnyObjectByType<GreyboxBattleBootstrap>();
+            }
+            Assert.IsNotNull(battle);
+            yield return null;
+            battle.Runner.SetAuto(true);
+            yield return null;
+            battle.Runner.Skip();
+            yield return null;
+            foreach (var b in Object.FindObjectsByType<Button>(FindObjectsSortMode.None))
+                if (b.gameObject.activeInHierarchy && b.name == "Continue") b.onClick.Invoke();
+
+            MainMenu back = null;
+            for (int i = 0; i < 120 && back == null; i++)
+            {
+                yield return null;
+                back = Object.FindAnyObjectByType<MainMenu>();
+            }
+            Assert.IsNotNull(back);
+            yield return null;
+            Assert.AreEqual(ScreenId.Hunt, back.Current);
+            Assert.AreEqual(HuntRules.MaxStamina - HuntRules.StaminaCost, SaveManager.Instance.Current.hunt.stamina);
+        }
+
         [UnityTest]
         public IEnumerator SpireBattle_RoundTrip_SavesTheClear()
         {

@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace P2D.Presentation.Screens
 {
-    public enum ScreenId { Nest, Dragon, Riders, Spire, Summon }
+    public enum ScreenId { Nest, Dragon, Riders, Spire, Summon, Hunt, Shop }
 
     /// <summary>
     /// The menu scene: loads the save, builds the portrait shell (resource bar, content area,
@@ -20,7 +20,12 @@ namespace P2D.Presentation.Screens
     /// </summary>
     public sealed class MainMenu : MonoBehaviour
     {
-        static readonly string[] NavLabels = { "NEST", "DRAGON", "RIDERS", "SPIRE", "SUMMON" };
+        // Bottom bar order from the mockup; Hunt shares ADVENTURE with the spire, Summon opens from RIDERS.
+        static readonly string[] NavLabels = { "DRAGON", "RIDERS", "NEST", "ADVENTURE", "SHOP" };
+        static readonly ScreenId[] NavTargets = { ScreenId.Dragon, ScreenId.Riders, ScreenId.Nest, ScreenId.Spire, ScreenId.Shop };
+
+        /// <summary>Where to land when the menu reloads after a battle.</summary>
+        static ScreenId returnScreen = ScreenId.Spire;
 
         readonly Dictionary<ScreenId, GameScreen> screens = new Dictionary<ScreenId, GameScreen>();
         readonly List<Image> navImages = new List<Image>();
@@ -56,9 +61,11 @@ namespace P2D.Presentation.Screens
             AddScreen(ScreenId.Riders, new RidersScreen());
             AddScreen(ScreenId.Spire, new SpireScreen());
             AddScreen(ScreenId.Summon, new SummonScreen());
+            AddScreen(ScreenId.Hunt, new HuntScreen());
+            AddScreen(ScreenId.Shop, new ShopScreen());
 
             bool returningFromBattle = !string.IsNullOrEmpty(BattleHandoff.LastMessage);
-            Show(returningFromBattle ? ScreenId.Spire : ScreenId.Nest);
+            Show(returningFromBattle ? returnScreen : ScreenId.Nest);
             if (returningFromBattle)
             {
                 Toast(BattleHandoff.LastMessage, 5);
@@ -76,8 +83,46 @@ namespace P2D.Presentation.Screens
         {
             current = id;
             foreach (var pair in screens) pair.Value.SetVisible(pair.Key == id);
-            for (int i = 0; i < navImages.Count; i++) navImages[i].color = i == (int)id ? UiKit.Accent : UiKit.Surface;
+            for (int i = 0; i < navImages.Count; i++) navImages[i].color = NavTargets[i] == NavTab(id) ? UiKit.Accent : UiKit.Surface;
             RefreshResources();
+        }
+
+        static ScreenId NavTab(ScreenId id)
+        {
+            switch (id)
+            {
+                case ScreenId.Hunt: return ScreenId.Spire;
+                case ScreenId.Summon: return ScreenId.Riders;
+                default: return id;
+            }
+        }
+
+        /// <summary>
+        /// Fights an already-rolled hunting encounter in the battle scene (stamina is spent by the
+        /// caller via HuntActions.BeginRun); rewards are applied on return.
+        /// </summary>
+        public void StartHuntBattle(int zone, EncounterKind kind)
+        {
+            var setup = HuntActions.BuildBattle(Save, zone, kind, Environment.TickCount);
+            SaveManager.Instance.MarkDirty();
+            SaveManager.Instance.SaveNow();
+            returnScreen = ScreenId.Hunt;
+            var zoneInfo = HuntActions.Zone(zone);
+
+            BattleHandoff.Pending = new BattleHandoff.Request
+            {
+                setup = setup,
+                title = zoneInfo.name + "  ·  " + kind,
+                onFinished = (outcome, inputs) =>
+                {
+                    var live = SaveManager.Instance.Current;
+                    var run = HuntActions.ApplyResult(live, zone, kind, outcome, new SeededRandom(Environment.TickCount));
+                    SaveManager.Instance.MarkDirty();
+                    SaveManager.Instance.SaveNow();
+                    BattleHandoff.LastMessage = HuntScreen.Describe(run);
+                },
+            };
+            SceneManager.LoadScene(BattleHandoff.BattleScene);
         }
 
         /// <summary>Saves after a successful action, shows its message and redraws the screen.</summary>
@@ -115,6 +160,7 @@ namespace P2D.Presentation.Screens
             var theme = SpireThemes.ForTime(ServerClock.UtcNow);
             var setup = GameActions.BuildSpireBattle(save, floor, theme.element, Environment.TickCount, tuning);
             SaveManager.Instance.SaveNow();
+            returnScreen = ScreenId.Spire;
 
             BattleHandoff.Pending = new BattleHandoff.Request
             {
@@ -182,7 +228,7 @@ namespace P2D.Presentation.Screens
             nav.gameObject.AddComponent<Image>().color = UiKit.Surface;
             for (int i = 0; i < NavLabels.Length; i++)
             {
-                var id = (ScreenId)i;
+                var id = NavTargets[i];
                 var cell = UiKit.Slice(UiKit.Fill(nav, "Nav " + id), i / (float)NavLabels.Length, (i + 1) / (float)NavLabels.Length, 10);
                 var button = UiKit.TextButton(cell, NavLabels[i], () => Show(id), UiKit.Surface, 28);
                 navImages.Add(button.GetComponent<Image>());
@@ -241,6 +287,16 @@ namespace P2D.Presentation.Screens
             var button = UiKit.TextButton(cell, text, onClick, color ?? UiKit.SurfaceAlt, size);
             button.interactable = interactable;
             return button;
+        }
+
+        /// <summary>SPIRE | HUNTING GROUNDS switch at the top of the adventure screens.</summary>
+        protected void AdventureTabs(RectTransform list, ScreenId active)
+        {
+            var row = UiKit.Row(list, 100);
+            CellButton(row, "WEEKLY SPIRE", 0, 0.5f, () => Menu.Show(ScreenId.Spire), true,
+                active == ScreenId.Spire ? UiKit.Accent : UiKit.SurfaceAlt);
+            CellButton(row, "HUNTING GROUNDS", 0.5f, 1, () => Menu.Show(ScreenId.Hunt), true,
+                active == ScreenId.Hunt ? UiKit.Accent : UiKit.SurfaceAlt);
         }
 
         protected static void Header(RectTransform list, string text)

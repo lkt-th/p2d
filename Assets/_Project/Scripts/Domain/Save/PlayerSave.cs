@@ -95,6 +95,7 @@ namespace P2D.Domain
         public SpireSave spire = new SpireSave();
         public HuntSave hunt = new HuntSave();
         public SummonPityState summonPity = new SummonPityState();
+        public ShopSave shop = new ShopSave();
         public List<LoadoutPresetSave> presets = new List<LoadoutPresetSave>();
 
         public static PlayerSave CreateNew(string playerId, string dragonName, DateTime utcNow, string starterRiderId)

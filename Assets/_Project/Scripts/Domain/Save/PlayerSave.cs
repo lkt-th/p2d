@@ -85,6 +85,9 @@ namespace P2D.Domain
         public long createdUtcTicks;
         public long savedUtcTicks;
 
+        /// <summary>Counter for new equipment uids.</summary>
+        public int nextItemId;
+
         public DragonSave dragon = new DragonSave();
         public WalletSave wallet = new WalletSave();
         public List<EquipmentState> equipment = new List<EquipmentState>();

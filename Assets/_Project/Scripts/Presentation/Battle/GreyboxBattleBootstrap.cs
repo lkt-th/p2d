@@ -46,7 +46,28 @@ namespace P2D.Presentation.Battle
             view.Initialize(this);
         }
 
-        void Start() => StartBattle();
+        void Start()
+        {
+            var request = BattleHandoff.Pending;
+            if (request == null)
+            {
+                StartBattle();
+                return;
+            }
+
+            // Campaign battle from the menu: play the given setup once, then report and go back.
+            request.setup.auto = false;
+            runner.Begin(request.setup);
+            view.Bind(runner, request.setup, request.title);
+            view.SetCampaignMode(() => FinishCampaign(request, runner.Simulation.Outcome), () => FinishCampaign(request, BattleOutcome.Defeat));
+        }
+
+        void FinishCampaign(BattleHandoff.Request request, BattleOutcome outcome)
+        {
+            BattleHandoff.Pending = null;
+            if (request.onFinished != null) request.onFinished(outcome, runner.Simulation.AppliedInputs);
+            UnityEngine.SceneManagement.SceneManager.LoadScene(request.returnScene);
+        }
 
         public void StartBattle()
         {

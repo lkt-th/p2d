@@ -28,6 +28,9 @@ namespace P2D.Services
         /// <summary>Raised after loading, with what happened while the player was away.</summary>
         public event Action<PlayerSave, OfflineReport> Loaded;
 
+        /// <summary>Set before the first SaveManager wakes to use other storage (tests use MemorySaveStorage).</summary>
+        public static ISaveStorage StorageOverride;
+
         void Awake()
         {
             if (Instance != null && Instance != this)
@@ -38,8 +41,13 @@ namespace P2D.Services
             Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            service = new SaveService(new FileSaveStorage(), new JsonUtilitySaveSerializer());
+            service = new SaveService(StorageOverride ?? new FileSaveStorage(), new JsonUtilitySaveSerializer());
             Load();
+        }
+
+        void OnDestroy()
+        {
+            if (Instance == this) Instance = null;
         }
 
         public void Load()

@@ -68,6 +68,10 @@ namespace P2D.Presentation.Battle
         Button commandButton;
         Text commandText;
         GameObject resultPanel;
+        Button buildButton;
+        Button retryButton;
+        Button nextButton;
+        Button continueButton;
         Text resultText;
 
         readonly List<EnemyView> enemies = new List<EnemyView>();
@@ -85,7 +89,26 @@ namespace P2D.Presentation.Battle
             BuildHud();
         }
 
-        public void Bind(BattleRunner battleRunner, BattleSetup battleSetup)
+        /// <summary>
+        /// Campaign battles (started from a menu): the BUILD button becomes LEAVE and the result
+        /// screen offers a single CONTINUE that returns to the menu.
+        /// </summary>
+        public void SetCampaignMode(UnityEngine.Events.UnityAction onContinue, UnityEngine.Events.UnityAction onLeave)
+        {
+            buildButton.onClick.RemoveAllListeners();
+            buildButton.onClick.AddListener(onLeave);
+            buildButton.GetComponentInChildren<Text>().text = "LEAVE";
+            retryButton.gameObject.SetActive(false);
+            nextButton.gameObject.SetActive(false);
+            continueButton.onClick.RemoveAllListeners();
+            continueButton.onClick.AddListener(onContinue);
+            continueButton.gameObject.SetActive(true);
+        }
+
+        public void Bind(BattleRunner battleRunner, BattleSetup battleSetup) =>
+            Bind(battleRunner, battleSetup, "Floor " + bootstrap.Floor + "  ·  " + bootstrap.CurrentBuild.name);
+
+        public void Bind(BattleRunner battleRunner, BattleSetup battleSetup, string title)
         {
             if (runner != null)
             {
@@ -101,7 +124,7 @@ namespace P2D.Presentation.Battle
             dragonBody.material.color = dragonColor;
             BuildEnemies();
             BuildSkillButtons();
-            titleText.text = "Floor " + bootstrap.Floor + "  ·  " + bootstrap.CurrentBuild.name;
+            titleText.text = title;
             resultPanel.SetActive(false);
             foreach (var f in floaters) Destroy(f.rect.gameObject);
             floaters.Clear();
@@ -255,7 +278,7 @@ namespace P2D.Presentation.Battle
             {
                 runner.SetAuto(!runner.Simulation.Auto);
             }).GetComponentInChildren<Text>();
-            MakeButton(top, "Build", "BUILD", new Vector2(1, 0.5f), new Vector2(-90, 0), new Vector2(150, 84), () => bootstrap.CycleBuild());
+            buildButton = MakeButton(top, "Build", "BUILD", new Vector2(1, 0.5f), new Vector2(-90, 0), new Vector2(150, 84), () => bootstrap.CycleBuild());
 
             // Bottom controls
             var bottom = MakePanel(safe, "Controls", new Vector2(0, 0), new Vector2(1, 0), Vector2.zero, new Vector2(0, 560), new Color(0.07f, 0.05f, 0.05f, 0.92f));
@@ -287,8 +310,10 @@ namespace P2D.Presentation.Battle
             resultText = MakeLabel(result, "Result Text", "", 64, TextAnchor.MiddleCenter, Color.white);
             resultText.rectTransform.anchorMin = new Vector2(0, 0.55f);
             resultText.rectTransform.anchorMax = new Vector2(1, 0.75f);
-            MakeButton(result, "Retry", "RETRY", new Vector2(0.5f, 0.45f), new Vector2(-230, 0), new Vector2(400, 130), () => bootstrap.StartBattle());
-            MakeButton(result, "Next", "NEXT FLOOR", new Vector2(0.5f, 0.45f), new Vector2(230, 0), new Vector2(400, 130), () => bootstrap.NextFloor());
+            retryButton = MakeButton(result, "Retry", "RETRY", new Vector2(0.5f, 0.45f), new Vector2(-230, 0), new Vector2(400, 130), () => bootstrap.StartBattle());
+            nextButton = MakeButton(result, "Next", "NEXT FLOOR", new Vector2(0.5f, 0.45f), new Vector2(230, 0), new Vector2(400, 130), () => bootstrap.NextFloor());
+            continueButton = MakeButton(result, "Continue", "CONTINUE", new Vector2(0.5f, 0.45f), Vector2.zero, new Vector2(500, 130), () => { });
+            continueButton.gameObject.SetActive(false);
             resultPanel.SetActive(false);
         }
 

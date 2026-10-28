@@ -1,0 +1,112 @@
+using System.Collections;
+using NUnit.Framework;
+using P2D.Domain;
+using P2D.Presentation.Battle;
+using P2D.Presentation.Screens;
+using P2D.Services;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.TestTools;
+using UnityEngine.UI;
+
+namespace P2D.PlayMode.Tests
+{
+    public class MainMenuTests
+    {
+        [SetUp]
+        public void SetUp()
+        {
+            SaveManager.StorageOverride = new MemorySaveStorage(); // never touch the real save
+            BattleHandoff.Pending = null;
+            BattleHandoff.LastMessage = null;
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            if (SaveManager.Instance != null) Object.DestroyImmediate(SaveManager.Instance.gameObject);
+            SaveManager.StorageOverride = null;
+            foreach (var go in Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None))
+                if (go.transform.parent == null && go.name != "Code-based tests runner") Object.Destroy(go);
+        }
+
+        [UnityTest]
+        public IEnumerator Menu_StartsNewGame_AndEveryScreenRenders()
+        {
+            var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
+            yield return null;
+
+            Assert.IsNotNull(menu.Save);
+            Assert.AreEqual(3, menu.Save.equipment.Count, "starter kit");
+            foreach (ScreenId id in System.Enum.GetValues(typeof(ScreenId)))
+            {
+                menu.Show(id);
+                yield return null;
+                Assert.AreEqual(id, menu.Current);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator DragonScreen_FeedButton_LevelsUp()
+        {
+            var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
+            yield return null;
+            menu.Show(ScreenId.Dragon);
+            yield return null;
+
+            long essence = menu.Save.wallet.dragonEssence;
+            Button feed = null;
+            foreach (var b in Object.FindObjectsByType<Button>(FindObjectsSortMode.None))
+                if (b.GetComponentInChildren<Text>().text.StartsWith("FEED")) feed = b;
+            Assert.IsNotNull(feed);
+            feed.onClick.Invoke();
+            yield return null;
+            // 10 essence = 1,000 EXP; Lv 10 → 11 needs 3,981, so EXP rises without a level-up
+            Assert.AreEqual(essence - 10, menu.Save.wallet.dragonEssence);
+            Assert.AreEqual(10 * GameActions.ExpPerEssence, menu.Save.dragon.exp);
+        }
+
+        [UnityTest]
+        public IEnumerator SpireBattle_RoundTrip_SavesTheClear()
+        {
+            var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
+            yield return null;
+            menu.StartSpireBattle(1);
+
+            GreyboxBattleBootstrap battle = null;
+            for (int i = 0; i < 120 && battle == null; i++)
+            {
+                yield return null;
+                battle = Object.FindAnyObjectByType<GreyboxBattleBootstrap>();
+            }
+            Assert.IsNotNull(battle, "battle scene loaded");
+            yield return null;
+            Assert.IsTrue(battle.Runner.IsRunning);
+
+            battle.Runner.SetAuto(true);
+            yield return null;
+            battle.Runner.Skip();
+            yield return null;
+            Assert.AreEqual(BattleOutcome.Victory, battle.Runner.Simulation.Outcome);
+
+            Button resume = null;
+            foreach (var b in Object.FindObjectsByType<Button>(FindObjectsSortMode.None))
+                if (b.gameObject.activeInHierarchy && b.name == "Continue") resume = b;
+            Assert.IsNotNull(resume);
+            resume.onClick.Invoke();
+
+            MainMenu back = null;
+            for (int i = 0; i < 120 && back == null; i++)
+            {
+                yield return null;
+                back = Object.FindAnyObjectByType<MainMenu>();
+            }
+            Assert.IsNotNull(back, "menu scene loaded again");
+            yield return null;
+            Assert.AreEqual(1, SaveManager.Instance.Current.spire.highestFloor);
+            Assert.AreEqual(4, SaveManager.Instance.Current.equipment.Count, "first-clear item");
+            Assert.AreEqual(ScreenId.Spire, back.Current);
+            Assert.AreEqual(SceneManager.GetActiveScene().name, BattleHandoff.MenuScene);
+        }
+    }
+}

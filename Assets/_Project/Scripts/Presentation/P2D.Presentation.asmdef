@@ -1,18 +1,19 @@
 {
-    "name": "P2D.Presentation",
-    "rootNamespace": "P2D.Presentation",
-    "references": [
-        "P2D.Domain",
-        "P2D.Data",
-        "UnityEngine.UI"
-    ],
-    "includePlatforms": [],
-    "excludePlatforms": [],
-    "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": [],
-    "noEngineReferences": false
+  "name": "P2D.Presentation",
+  "rootNamespace": "P2D.Presentation",
+  "references": [
+    "P2D.Domain",
+    "P2D.Data",
+    "P2D.Services",
+    "UnityEngine.UI"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
 }

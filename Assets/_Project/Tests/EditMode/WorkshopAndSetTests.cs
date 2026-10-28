@@ -120,7 +120,7 @@ namespace P2D.Domain.Tests
             var wing = Item(save, EquipSlot.Wing, Rarity.Rare, 0, "magma");
             GameActions.Equip(save, horn.uid);
             GameActions.Equip(save, wing.uid);
-            Assert.AreEqual(0.60, LoadoutCalculator.BattleTraits(GameActions.ToLoadout(save)).critBurstMultiplier);
+            Assert.AreEqual(0.40, LoadoutCalculator.BattleTraits(GameActions.ToLoadout(save)).critBurstMultiplier); // Balance §7.5
         }
 
         [Test]

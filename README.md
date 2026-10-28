@@ -13,6 +13,7 @@
 | [docs/GDD.md](docs/GDD.md) | Game Design Document หลัก: Core loop, มังกร, อุปกรณ์ & Growth Path, ผู้ใช้มังกร & ระดับดาว, ดันเจี้ยนรายสัปดาห์, การต่อสู้, เศรษฐกิจ, Roadmap |
 | [docs/Balance.md](docs/Balance.md) | สูตรคำนวณ ตารางค่าพลัง ค่าอัปเกรด อัตราดรอป และจังหวะความคืบหน้า |
 | [docs/UI-Portrait.md](docs/UI-Portrait.md) | หลักการ UI แนวตั้ง, การจัดโซนหน้าจอ, Wireframe ทุกหน้าหลัก, ท่าทางสัมผัส, Accessibility |
+| [docs/balance-report.md](docs/balance-report.md) | ผลจำลองสมดุลล่าสุด: Build แต่ละ Path ไต่หอคอยได้ถึงชั้นไหน ชนะบอสกี่ % และการปรับที่ทำตามผล |
 | [docs/Unity-Tech.md](docs/Unity-Tech.md) | Tech stack, โครงสร้างโปรเจกต์, สถาปัตยกรรม, Data model + ตัวอย่างโค้ด C#, Safe Area/Canvas Scaler, Backend, ภาษาไทย |
 
 ## เริ่มพัฒนา (Unity)
@@ -29,7 +30,7 @@
 | `Assets/_Project/Scripts/Services` | ส่วนเชื่อม Unity: `SaveManager` (เซฟอัตโนมัติ/ตอนพับแอป), `FileSaveStorage` (เขียนไฟล์แบบ atomic), `JsonUtilitySaveSerializer`, `ServerClock` |
 | `Assets/_Project/Scripts/Data` | ScriptableObject สำหรับกรอกข้อมูลในเอดิเตอร์ (เช่น `RiderDefinition`) |
 | `Assets/_Project/Scripts/Presentation` | UI แนวตั้ง: `SafeAreaFitter`, `PortraitCanvasScaler` · `BattleRunner` เดินการต่อสู้แบบเรียลไทม์ (×1/×2/×3) และส่ง event ให้ฉาก |
-| `Assets/_Project/Scripts/Editor` | เครื่องมือเอดิเตอร์ |
+| `Assets/_Project/Scripts/Editor` | เครื่องมือเอดิเตอร์: ตั้งค่าจอแนวตั้ง, **P2D → Balance Simulator** (จำลองสมดุลหอคอย) |
 | `Assets/_Project/Tests/EditMode` | NUnit tests ที่ตรวจตัวเลขกับ `docs/Balance.md` |
 
 ## ระบบหลักโดยย่อ

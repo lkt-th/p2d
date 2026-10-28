@@ -25,11 +25,11 @@ namespace P2D.Domain
             new SkillData { id = "scale_guard", path = GrowthPath.Bastion, tier = 1, target = SkillTarget.Self,
                 multiplier = 0, cooldownSeconds = 12, shieldPercent = 0.15, shieldSeconds = 6 },
             new SkillData { id = "tail_slam", path = GrowthPath.Bastion, tier = 2, target = SkillTarget.Single,
-                multiplier = 1.6, cooldownSeconds = 8, shieldPercent = 0.08, shieldSeconds = 5 },
+                multiplier = 1.6, maxHpDamage = 0.12, cooldownSeconds = 6, shieldPercent = 0.08, shieldSeconds = 5 },
             new SkillData { id = "stone_mend", path = GrowthPath.Bastion, tier = 3, target = SkillTarget.Self,
                 multiplier = 0, cooldownSeconds = 18, healPercent = 0.20 },
-            new SkillData { id = "eternal_bastion", path = GrowthPath.Bastion, tier = 4, target = SkillTarget.Self,
-                multiplier = 0, cooldownSeconds = 35, shieldPercent = 0.40, shieldSeconds = 10,
+            new SkillData { id = "eternal_bastion", path = GrowthPath.Bastion, tier = 4, target = SkillTarget.All,
+                multiplier = 1.5, maxHpDamage = 0.10, cooldownSeconds = 35, shieldPercent = 0.40, shieldSeconds = 10,
                 reflectPercent = 0.30, reflectSeconds = 10 },
 
             // ---- Tempest: many hits, evasion ----
@@ -44,13 +44,13 @@ namespace P2D.Domain
 
             // ---- Arcane: element damage, cooldown control ----
             new SkillData { id = "rune_orb", path = GrowthPath.Arcane, tier = 1, target = SkillTarget.Single,
-                multiplier = 1.8, cooldownSeconds = 5, extraElementDamage = 0.30 },
+                multiplier = 1.8, cooldownSeconds = 5, extraElementDamage = 0.20 },
             new SkillData { id = "star_bolt", path = GrowthPath.Arcane, tier = 2, target = SkillTarget.All,
-                multiplier = 1.3, cooldownSeconds = 8 },
+                multiplier = 1.1, cooldownSeconds = 8 },
             new SkillData { id = "time_mirror", path = GrowthPath.Arcane, tier = 3, target = SkillTarget.Self,
                 multiplier = 0, cooldownSeconds = 15, cooldownReduceSeconds = 4 },
             new SkillData { id = "galaxy_rain", path = GrowthPath.Arcane, tier = 4, target = SkillTarget.All,
-                multiplier = 1.5, hits = 3, cooldownSeconds = 30, extraElementDamage = 0.50 },
+                multiplier = 1.2, hits = 3, cooldownSeconds = 30, extraElementDamage = 0.50 },
         };
 
         public static IReadOnlyList<SkillData> All => all;

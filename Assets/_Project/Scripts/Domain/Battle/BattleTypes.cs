@@ -9,7 +9,16 @@ namespace P2D.Domain
 
     public enum SkillTarget { Single, All, Self }
 
-    public enum CommandKind { AttackBuff, Shield, DamageAll, Freeze }
+    public enum CommandKind
+    {
+        AttackBuff,
+        Shield,
+        DamageAll,
+        Freeze,
+
+        /// <summary>Clears the cooldown of the skill that has the longest wait left.</summary>
+        ResetCooldown,
+    }
 
     public enum BattleEventType
     {
@@ -66,6 +75,9 @@ namespace P2D.Domain
         public int hits = 1;
         public double cooldownSeconds = 6;
 
+        /// <summary>Extra damage per hit as a fraction of the dragon's max HP (Bastion).</summary>
+        public double maxHpDamage;
+
         /// <summary>Extra Element DMG for this skill's hits (0.3 = +30%).</summary>
         public double extraElementDamage;
 
@@ -110,6 +122,9 @@ namespace P2D.Domain
 
         // Bastion
         public double startShieldPercent;
+
+        /// <summary>Basic attacks add this fraction of max HP to their damage.</summary>
+        public double basicMaxHpDamage;
         public double reflectPercent;
 
         // Tempest

@@ -45,6 +45,7 @@ namespace P2D.Domain
             public double critBonus;
             public double burnPerSecond;
             public double burnSeconds;
+            public double maxHpDamage;
         }
 
         readonly BattleSetup setup;
@@ -224,6 +225,7 @@ namespace P2D.Domain
                 critBonus = skill.hits > 1 ? traits.multiHitCritBonus : 0,
                 burnPerSecond = skill.burnPerSecond,
                 burnSeconds = skill.burnSeconds,
+                maxHpDamage = skill.maxHpDamage,
             };
             int hits = Math.Max(1, skill.hits);
             if (skill.target == SkillTarget.Single)
@@ -290,6 +292,16 @@ namespace P2D.Domain
                 case CommandKind.Freeze:
                     frozenTicksLeft = ToTicks(command.durationSeconds);
                     Emit(BattleEventType.Frozen, -1, command.durationSeconds);
+                    break;
+                case CommandKind.ResetCooldown:
+                    int longest = -1;
+                    for (int i = 0; i < skillCooldowns.Length; i++)
+                        if (skillCooldowns[i] > 0 && (longest < 0 || skillCooldowns[i] > skillCooldowns[longest])) longest = i;
+                    if (longest >= 0)
+                    {
+                        Emit(BattleEventType.CooldownsReduced, -1, skillCooldowns[longest]);
+                        skillCooldowns[longest] = 0;
+                    }
                     break;
             }
             return true;
@@ -372,9 +384,13 @@ namespace P2D.Domain
             dragonAttackTimer = AttackIntervalTicks(setup.dragon.speed);
             basicAttackCount++;
 
-            HitEnemy(CurrentTarget(), new HitOptions { multiplier = 1.0 });
+            var basic = new HitOptions { multiplier = 1.0, maxHpDamage = traits.basicMaxHpDamage };
+            HitEnemy(CurrentTarget(), basic);
             if (traits.doubleHitEvery > 0 && basicAttackCount % traits.doubleHitEvery == 0)
-                HitEnemy(CurrentTarget(), new HitOptions { multiplier = 1.0, critBonus = traits.multiHitCritBonus });
+            {
+                basic.critBonus = traits.multiHitCritBonus;
+                HitEnemy(CurrentTarget(), basic);
+            }
         }
 
         void EnemiesAct()
@@ -489,6 +505,7 @@ namespace P2D.Domain
                 critRate = setup.dragon.critRate + hit.critBonus,
                 critDamage = setup.dragon.critDamage,
                 extraMultiplier = extra,
+                flatBonus = hit.maxHpDamage * DragonMaxHp,
             };
             bool crit;
             double damage = CombatFormulas.RollDamage(input, random, out crit);

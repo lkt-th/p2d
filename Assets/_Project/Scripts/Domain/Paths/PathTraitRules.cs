@@ -39,8 +39,8 @@ namespace P2D.Domain
             if (Tier(affinity, GrowthPath.Fury) >= 2) { t.critBurnPerSecond = 0.20; t.critBurnSeconds = 3; }
             if (Tier(affinity, GrowthPath.Fury) >= 3) t.lowHpDamageBonus = 0.20;
 
-            if (Tier(affinity, GrowthPath.Bastion) >= 2) t.startShieldPercent = 0.10;
-            if (Tier(affinity, GrowthPath.Bastion) >= 3) t.reflectPercent = 0.15;
+            if (Tier(affinity, GrowthPath.Bastion) >= 2) { t.startShieldPercent = 0.10; t.basicMaxHpDamage = 0.03; }
+            if (Tier(affinity, GrowthPath.Bastion) >= 3) t.reflectPercent = 0.20;
 
             if (Tier(affinity, GrowthPath.Tempest) >= 2) t.dodgeBonus = 0.08;
             if (Tier(affinity, GrowthPath.Tempest) >= 3) t.doubleHitEvery = 4;

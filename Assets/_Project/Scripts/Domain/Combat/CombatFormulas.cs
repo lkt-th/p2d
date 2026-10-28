@@ -14,6 +14,9 @@ namespace P2D.Domain
         public double critRate;
         public double critDamage;
         public double extraMultiplier;
+
+        /// <summary>Added to ATK × multiplier before defense (e.g. a share of max HP).</summary>
+        public double flatBonus;
     }
 
     /// <summary>Damage and timing formulas — docs/Balance.md §2.</summary>
@@ -59,7 +62,7 @@ namespace P2D.Domain
         public static double BaseDamage(DamageInput input)
         {
             double extra = input.extraMultiplier <= 0 ? 1.0 : input.extraMultiplier;
-            return input.attack * input.skillMultiplier
+            return (input.attack * input.skillMultiplier + input.flatBonus)
                 * DefenseFactor(input.attackerLevel, input.targetDefense)
                 * (1 + input.elementDamageBonus)
                 * ElementMultiplier(input.attackerElement, input.targetElement)

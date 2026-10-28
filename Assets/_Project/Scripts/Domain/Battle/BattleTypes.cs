@@ -144,6 +144,13 @@ namespace P2D.Domain
         public double dodgeShieldPercent;
         public double dodgeCooldownReduceSeconds;
         public bool shieldScalesWithElement;
+
+        // 4-piece set bonuses (SetCatalog)
+        public double critBurstMultiplier;
+        public double shieldedReflectPercent;
+        public double dodgeCounterMultiplier;
+        public double skillElementBuff;
+        public double skillElementBuffSeconds;
     }
 
     [Serializable]

@@ -92,6 +92,33 @@ namespace P2D.PlayMode.Tests
         }
 
         [UnityTest]
+        public IEnumerator DragonWorkshop_ReforgeAndRefine()
+        {
+            var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
+            yield return null;
+            var save = menu.Save;
+            save.wallet.elementCrystals[0] = 50;
+            save.wallet.pathEssence[(int)GrowthPath.Arcane] = 50;
+            save.wallet.refineStones = 10;
+            var heart = save.FindEquipment(save.dragon.equipped[(int)EquipSlot.HeartCore]);
+            heart.subs = new[] { new StatModifier(StatType.SPD, ModType.Flat, 2) };
+
+            menu.Show(ScreenId.Dragon);
+            yield return null;
+            FindButton("WORKSHOP").onClick.Invoke(); // first equipped row = Heart Core
+            yield return null;
+
+            FindButton("Arcane").onClick.Invoke();
+            yield return null;
+            Assert.AreEqual(GrowthPath.Arcane, heart.path);
+
+            int stones = save.wallet.refineStones;
+            FindButton("REROLL").onClick.Invoke();
+            yield return null;
+            Assert.Less(save.wallet.refineStones, stones);
+        }
+
+        [UnityTest]
         public IEnumerator ShopScreen_StaminaRefill_UsesCrystals()
         {
             var menu = new GameObject("Main Menu").AddComponent<MainMenu>();

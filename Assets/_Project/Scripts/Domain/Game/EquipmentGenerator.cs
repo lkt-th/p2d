@@ -85,6 +85,32 @@ namespace P2D.Domain
             item.subs = subs.ToArray();
         }
 
+        /// <summary>
+        /// Refine: replaces sub-stat <paramref name="index"/> with a new random one (the others stay,
+        /// i.e. they are "locked"). The new line keeps the number of rolls the old one had absorbed,
+        /// so milestone upgrades are not lost.
+        /// </summary>
+        public static void RerollSub(IRandom random, EquipmentState item, int index)
+        {
+            var subs = new List<StatModifier>(item.subs);
+            var old = subs[index];
+            var oldRoll = RollFor(old.stat, old.type);
+            int rolls = Math.Max(1, (int)Math.Round(old.value / ((oldRoll.min + oldRoll.max) / 2)));
+
+            var options = new List<SubRoll>();
+            foreach (var s in SubTable)
+            {
+                bool taken = s.stat == item.main.stat && s.type == item.main.type;
+                for (int i = 0; i < subs.Count; i++) if (i != index && subs[i].stat == s.stat) taken = true;
+                if (!taken) options.Add(s);
+            }
+            var pick = options[random.Next(options.Count)];
+            double value = 0;
+            for (int r = 0; r < rolls; r++) value += Roll(random, pick);
+            subs[index] = new StatModifier(pick.stat, pick.type, value);
+            item.subs = subs.ToArray();
+        }
+
         /// <summary>Spire drop rarity by floor band (Balance §5.3), capped by the bracket (§5.1).</summary>
         public static Rarity RollSpireRarity(IRandom random, int floor, int bracket)
         {

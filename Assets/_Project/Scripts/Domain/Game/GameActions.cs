@@ -36,6 +36,7 @@ namespace P2D.Domain
     {
         public const int ExpPerEssence = 100;
         public const int GoldPerExp = 10;
+        public const double SetDropChanceHighFloors = 0.30;
         static readonly long[] StarUpGoldR = { 5000, 10000, 20000, 40000 };
         static readonly int[] RankGoldMultiplier = { 1, 2, 5, 10 };
 
@@ -152,6 +153,64 @@ namespace P2D.Domain
             if (EquipmentRules.IsMilestone(item.enhance)) EquipmentGenerator.ApplyMilestone(random, item);
             AutoSkillsIfInvalid(save);
             return ActionResult.Ok("+" + item.enhance);
+        }
+
+        /// <summary>Crystals needed to reforge: ceil(0.3 × invested forge stones / 5), at least 1.</summary>
+        public static int ReforgeCrystalCost(EquipmentState item) => Math.Max(1, EquipmentRules.ReforgeCrystalCost(item.enhance, item.rarity));
+
+        static int TotalCrystals(WalletSave w)
+        {
+            int total = 0;
+            foreach (int c in w.elementCrystals) total += c;
+            return total;
+        }
+
+        /// <summary>
+        /// Path Reforge: moves the item to another Growth Path and keeps its enhance level.
+        /// Costs element crystals (any element, largest piles first) and essence of the target path.
+        /// </summary>
+        public static ActionResult Reforge(PlayerSave save, string uid, GrowthPath target)
+        {
+            var item = save.FindEquipment(uid);
+            if (item == null) return ActionResult.Fail("Item not found");
+            if (item.path == target) return ActionResult.Fail("Already " + target);
+            int crystals = ReforgeCrystalCost(item);
+            int essence = EquipmentRules.ReforgePathEssenceCost(item.rarity);
+            var w = save.wallet;
+            if (TotalCrystals(w) < crystals) return ActionResult.Fail("Need " + crystals + " element crystals");
+            if (w.pathEssence[(int)target] < essence) return ActionResult.Fail("Need " + essence + " " + target + " essence");
+
+            int left = crystals;
+            while (left > 0)
+            {
+                int biggest = 0;
+                for (int i = 1; i < w.elementCrystals.Length; i++)
+                    if (w.elementCrystals[i] > w.elementCrystals[biggest]) biggest = i;
+                int take = Math.Min(left, w.elementCrystals[biggest]);
+                w.elementCrystals[biggest] -= take;
+                left -= take;
+            }
+            w.pathEssence[(int)target] -= essence;
+            item.path = target;
+            AutoSkillsIfInvalid(save);
+            return ActionResult.Ok("Reforged to " + target + " (+" + item.enhance + " kept)");
+        }
+
+        /// <summary>Refine: rerolls one sub-stat; the others are kept.</summary>
+        public static ActionResult Refine(PlayerSave save, string uid, int subIndex, IRandom random)
+        {
+            var item = save.FindEquipment(uid);
+            if (item == null) return ActionResult.Fail("Item not found");
+            if (item.subs == null || subIndex < 0 || subIndex >= item.subs.Length) return ActionResult.Fail("No such sub-stat");
+            int stones = EquipmentRules.RefineCost(item.rarity);
+            long gold = EquipmentRules.RefineGold(item.rarity);
+            if (save.wallet.refineStones < stones) return ActionResult.Fail("Need " + stones + " refine stones");
+            if (save.wallet.gold < gold) return ActionResult.Fail("Need " + gold + " gold");
+
+            save.wallet.refineStones -= stones;
+            save.wallet.gold -= gold;
+            EquipmentGenerator.RerollSub(random, item, subIndex);
+            return ActionResult.Ok("Refined");
         }
 
         public static ActionResult Salvage(PlayerSave save, string uid)
@@ -339,6 +398,10 @@ namespace P2D.Domain
 
             var rarity = EquipmentGenerator.RollSpireRarity(random, floor, save.spire.bracket);
             reward.gear = EquipmentGenerator.CreateRandom(random, rarity, save.dragon.stage, NewUid(save));
+            // This week's set: always from guardians and the boss, 30% from floors 21–29 (Balance §7.5).
+            var set = SetCatalog.ForElement(themeElement);
+            bool setFloor = SpireRules.TypeOf(floor) != FloorType.Normal || (floor > 20 && random.NextDouble() < SetDropChanceHighFloors);
+            if (set != null && setFloor) reward.gear.setId = set.id;
             save.equipment.Add(reward.gear);
             save.spire.highestFloor = floor;
             return reward;

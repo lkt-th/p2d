@@ -331,8 +331,9 @@ namespace P2D.Presentation.Screens
             var main = EquipmentRules.MainModifier(item);
             var parts = new List<string>();
             foreach (var s in item.subs ?? new StatModifier[0]) parts.Add(Stat(s));
+            var set = SetCatalog.Find(item.setId);
             return "<b>" + item.slot + "</b>  " + RarityTag(item.rarity) + " +" + item.enhance + "   " + item.path + " "
-                + AffinityRules.ForEquipment(item.rarity, item.enhance) + "\n" + Stat(main)
+                + AffinityRules.ForEquipment(item.rarity, item.enhance) + (set != null ? "   <color=#e9c46a>" + set.name + "</color>" : "") + "\n" + Stat(main)
                 + (parts.Count > 0 ? "   <color=#a3a8ba>" + string.Join(", ", parts.ToArray()) + "</color>" : "");
         }
 

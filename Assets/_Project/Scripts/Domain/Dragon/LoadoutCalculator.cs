@@ -41,11 +41,26 @@ namespace P2D.Domain
                     sheet.AddRange(RiderRules.Buffs(loadout.supportRiders[i], loadout.supportRiderStates[i], RiderRules.SupportRatio));
 
             sheet.AddRange(PathTraitRules.StatModifiers(Affinity(loadout), LegacyResonance(loadout)));
+            sheet.AddRange(SetCatalog.StatModifiers(SetPieces(loadout)));
             return sheet;
         }
 
-        public static PathBattleTraits BattleTraits(Loadout loadout) =>
-            PathTraitRules.BattleTraits(Affinity(loadout), LegacyResonance(loadout));
+        public static PathBattleTraits BattleTraits(Loadout loadout)
+        {
+            var traits = PathTraitRules.BattleTraits(Affinity(loadout), LegacyResonance(loadout));
+            SetCatalog.ApplyFourPiece(SetPieces(loadout), ref traits);
+            return traits;
+        }
+
+        /// <summary>Equipped pieces per set, counting unlocked slots only.</summary>
+        public static Dictionary<string, int> SetPieces(Loadout loadout)
+        {
+            var unlocked = new List<EquipmentState>();
+            foreach (var item in loadout.equipped)
+                if (item != null && DragonRules.IsSlotUnlocked(item.slot, loadout.stage))
+                    unlocked.Add(item);
+            return SetCatalog.Count(unlocked);
+        }
 
         static bool LegacyResonance(Loadout loadout) =>
             loadout.mainRider != null && loadout.mainRider.legacyLowersResonance;

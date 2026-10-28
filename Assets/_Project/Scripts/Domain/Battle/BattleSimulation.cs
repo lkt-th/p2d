@@ -46,6 +46,9 @@ namespace P2D.Domain
             public double burnPerSecond;
             public double burnSeconds;
             public double maxHpDamage;
+
+            /// <summary>Set-bonus follow-up hits (burst, counter) don't trigger further procs.</summary>
+            public bool isProc;
         }
 
         readonly BattleSetup setup;
@@ -67,6 +70,8 @@ namespace P2D.Domain
         int frozenTicksLeft;
         int dodgeBuffTicksLeft;
         int reflectTicksLeft;
+        int elementBuffTicksLeft;
+        double elementBuff;
         int speedBuffTicksLeft;
         double attackBuff;
         double speedBuff;
@@ -249,6 +254,11 @@ namespace P2D.Domain
             int cooldown = Math.Max(1, ToTicks(CombatFormulas.Cooldown(skill.cooldownSeconds, setup.dragon.skillHaste)));
             skillCooldowns[slot] = echo ? 0 : cooldown;
             skillsSinceEcho = echo ? 0 : skillsSinceEcho + 1;
+            if (traits.skillElementBuff > 0)
+            {
+                elementBuff = traits.skillElementBuff;
+                elementBuffTicksLeft = ToTicks(traits.skillElementBuffSeconds);
+            }
             Emit(BattleEventType.SkillUsed, -1, slot);
             return true;
         }
@@ -367,6 +377,7 @@ namespace P2D.Domain
             if (shieldTicksLeft > 0 && --shieldTicksLeft == 0) Shield = 0;
             if (dodgeBuffTicksLeft > 0 && --dodgeBuffTicksLeft == 0) dodgeBuff = 0;
             if (reflectTicksLeft > 0 && --reflectTicksLeft == 0) reflectBuff = 0;
+            if (elementBuffTicksLeft > 0 && --elementBuffTicksLeft == 0) elementBuff = 0;
             if (speedBuffTicksLeft > 0 && --speedBuffTicksLeft == 0) speedBuff = 0;
 
             if (timeLimitTicks > 0 && Tick >= timeLimitTicks)
@@ -475,6 +486,8 @@ namespace P2D.Domain
         void OnDodged(int enemy)
         {
             Emit(BattleEventType.Dodged, enemy, 0);
+            if (traits.dodgeCounterMultiplier > 0 && enemy >= 0 && Enemies[enemy].alive)
+                HitEnemy(enemy, new HitOptions { multiplier = traits.dodgeCounterMultiplier, isProc = true });
             if (traits.dodgeShieldPercent > 0)
                 GainShield(traits.dodgeShieldPercent * DragonMaxHp, 5);
             if (traits.dodgeCooldownReduceSeconds > 0)
@@ -510,7 +523,7 @@ namespace P2D.Domain
                 skillMultiplier = hit.multiplier,
                 attackerLevel = setup.dragonLevel,
                 targetDefense = e.spec.defense,
-                elementDamageBonus = setup.dragon.elementDamage + hit.extraElement,
+                elementDamageBonus = setup.dragon.elementDamage + hit.extraElement + elementBuff,
                 attackerElement = setup.dragonElement,
                 targetElement = e.spec.element,
                 critRate = setup.dragon.critRate + hit.critBonus,
@@ -526,6 +539,8 @@ namespace P2D.Domain
 
             if (hit.burnPerSecond > 0) ApplyBurn(e, hit.burnPerSecond, hit.burnSeconds);
             if (crit && traits.critBurnPerSecond > 0) ApplyBurn(e, traits.critBurnPerSecond, traits.critBurnSeconds);
+            if (crit && !hit.isProc && traits.critBurstMultiplier > 0)
+                HitEnemy(index, new HitOptions { multiplier = traits.critBurstMultiplier, isProc = true });
         }
 
         void DamageEnemy(int index, EnemyRuntime e, double damage, bool crit, BattleEventType type)
@@ -565,7 +580,7 @@ namespace P2D.Domain
             bool crit;
             double damage = CombatFormulas.RollDamage(input, random, out crit);
 
-            double reflect = traits.reflectPercent + reflectBuff;
+            double reflect = traits.reflectPercent + reflectBuff + (Shield > 0 ? traits.shieldedReflectPercent : 0);
             if (reflect > 0)
                 DamageEnemy(index, e, damage * reflect, false, BattleEventType.Reflected);
 

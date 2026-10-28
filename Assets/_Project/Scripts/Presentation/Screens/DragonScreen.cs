@@ -10,8 +10,54 @@ namespace P2D.Presentation.Screens
     public sealed class DragonScreen : GameScreen
     {
         RectTransform list;
+        string workshopUid;
 
         protected override void Build() => list = UiKit.ScrollList(Root);
+
+        /// <summary>Reforge (change path, keep +N) and refine (reroll one sub-stat) for one item.</summary>
+        void Workshop(PlayerSave save, EquipmentState item)
+        {
+            Header(list, "Workshop");
+            var info = UiKit.Row(list, 130, new Color(0.16f, 0.13f, 0.2f));
+            Cell(info, Fmt.Item(item), 0.02f, 0.78f, 26);
+            CellButton(info, "CLOSE", 0.8f, 1, () => { workshopUid = null; Refresh(); });
+
+            int crystals = GameActions.ReforgeCrystalCost(item);
+            int essence = EquipmentRules.ReforgePathEssenceCost(item.rarity);
+            int owned = 0;
+            foreach (int c in save.wallet.elementCrystals) owned += c;
+            Cell(UiKit.Row(list, 80), "Reforge path — keeps +" + item.enhance + ".  Cost " + crystals + " element crystals (have " + owned
+                + ") + " + essence + " essence of the new path", 0.02f, 1, 26, TextAnchor.MiddleLeft, UiKit.Muted);
+            var paths = UiKit.Row(list, 100);
+            var all = (GrowthPath[])Enum.GetValues(typeof(GrowthPath));
+            for (int i = 0; i < all.Length; i++)
+            {
+                var target = all[i];
+                bool current = target == item.path;
+                string uid = item.uid;
+                CellButton(paths, current ? target + "\n(current)" : target + "\n" + save.wallet.pathEssence[(int)target] + " ess.",
+                    i / 4f, (i + 1) / 4f, () => Menu.Commit(GameActions.Reforge(save, uid, target)), !current,
+                    current ? UiKit.Accent : UiKit.SurfaceAlt, 26);
+            }
+
+            Cell(UiKit.Row(list, 80), "Refine — reroll one sub-stat, the others stay.  Cost " + EquipmentRules.RefineCost(item.rarity)
+                + " refine stones (have " + save.wallet.refineStones + ") + " + Fmt.Num(EquipmentRules.RefineGold(item.rarity)) + " gold",
+                0.02f, 1, 26, TextAnchor.MiddleLeft, UiKit.Muted);
+            if (item.subs == null || item.subs.Length == 0)
+            {
+                Cell(UiKit.Row(list, 70), "No sub-stats yet (they appear at +3, +6, …).", 0.02f, 1, 26, TextAnchor.MiddleLeft, UiKit.Muted);
+                return;
+            }
+            for (int i = 0; i < item.subs.Length; i++)
+            {
+                int index = i;
+                string uid = item.uid;
+                var row = UiKit.Row(list, 80, UiKit.Surface);
+                Cell(row, Fmt.Stat(item.subs[i]), 0.02f, 0.7f, 28);
+                CellButton(row, "REROLL", 0.72f, 1, () => Menu.Commit(GameActions.Refine(save, uid, index, Menu.Random)),
+                    save.wallet.refineStones >= EquipmentRules.RefineCost(item.rarity));
+            }
+        }
 
         public override void Refresh()
         {
@@ -33,6 +79,23 @@ namespace P2D.Presentation.Screens
                 + "\nCRIT " + (sheet.Get(StatType.CritRate) * 100).ToString("0.#") + "% / " + (sheet.Get(StatType.CritDmg) * 100).ToString("0")
                 + "%   Element " + (sheet.Get(StatType.ElementDmg) * 100).ToString("0.#") + "%   Haste " + sheet.Get(StatType.SkillHaste).ToString("0"),
                 0.02f, 1, 30);
+
+            var selected = save.FindEquipment(workshopUid);
+            if (selected != null) Workshop(save, selected);
+
+            var sets = LoadoutCalculator.SetPieces(loadout);
+            if (sets.Count > 0)
+            {
+                Header(list, "Set bonuses");
+                foreach (var pair in sets)
+                {
+                    var set = SetCatalog.Find(pair.Key);
+                    var row = UiKit.Row(list, 90, UiKit.Surface);
+                    string two = (pair.Value >= SetCatalog.TwoPiece ? "<color=#6cc27a>" : "<color=#7a8094>") + "2: " + set.twoPieceText + "</color>";
+                    string four = (pair.Value >= SetCatalog.FourPiece ? "<color=#6cc27a>" : "<color=#7a8094>") + "4: " + set.fourPieceText + "</color>";
+                    Cell(row, "<b>" + set.name + "</b> " + pair.Value + "/4\n" + two + "   " + four, 0.02f, 1, 24);
+                }
+            }
 
             Header(list, "Growth paths  (tiers at 20 / 60 / 120 / 200)");
             foreach (GrowthPath path in Enum.GetValues(typeof(GrowthPath)))
@@ -80,11 +143,12 @@ namespace P2D.Presentation.Screens
                     Cell(row, slot + "  —  empty", 0.02f, 1, 28, TextAnchor.MiddleLeft, UiKit.Muted);
                     continue;
                 }
-                Cell(row, Fmt.Item(item), 0.02f, 0.72f, 26);
+                Cell(row, Fmt.Item(item), 0.02f, 0.56f, 26);
                 string uid = item.uid;
+                CellButton(row, "WORKSHOP", 0.57f, 0.76f, () => { workshopUid = uid; Refresh(); }, true, UiKit.Surface, 24);
                 bool maxed = item.enhance >= EquipmentRules.MaxEnhance;
                 CellButton(row, maxed ? "MAX" : "ENHANCE\n" + EquipmentRules.StoneCost(item.enhance, item.rarity) + " stones",
-                    0.74f, 1, () => Menu.Commit(GameActions.Enhance(save, uid, Menu.Random)), !maxed);
+                    0.76f, 1, () => Menu.Commit(GameActions.Enhance(save, uid, Menu.Random)), !maxed);
             }
 
             var bag = new List<EquipmentState>();
@@ -98,11 +162,12 @@ namespace P2D.Presentation.Screens
             foreach (var item in bag)
             {
                 var row = UiKit.Row(list, 120, UiKit.Surface);
-                Cell(row, Fmt.Item(item), 0.02f, 0.62f, 26);
+                Cell(row, Fmt.Item(item), 0.02f, 0.5f, 26);
                 string uid = item.uid;
-                CellButton(row, "EQUIP", 0.63f, 0.82f, () => Menu.Commit(GameActions.Equip(save, uid), "Equipped"),
+                CellButton(row, "WORKSHOP", 0.51f, 0.67f, () => { workshopUid = uid; Refresh(); }, true, UiKit.Surface, 22);
+                CellButton(row, "EQUIP", 0.67f, 0.83f, () => Menu.Commit(GameActions.Equip(save, uid), "Equipped"),
                     DragonRules.IsSlotUnlocked(item.slot, d.stage));
-                CellButton(row, "SALVAGE", 0.82f, 1, () => Menu.Commit(GameActions.Salvage(save, uid), "Salvaged"), true, UiKit.Surface);
+                CellButton(row, "SALVAGE", 0.83f, 1, () => Menu.Commit(GameActions.Salvage(save, uid), "Salvaged"), true, UiKit.Surface);
             }
         }
 

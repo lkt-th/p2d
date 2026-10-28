@@ -92,6 +92,13 @@ namespace P2D.Domain
 
         public static int ReforgePathEssenceCost(Rarity rarity) => ReforgePathEssence[(int)rarity];
 
+        static readonly int[] RefineStoneCost = { 1, 1, 1, 2, 3, 4 };
+
+        /// <summary>Refine stones to reroll one sub-stat (Balance §7.4).</summary>
+        public static int RefineCost(Rarity rarity) => RefineStoneCost[(int)rarity];
+
+        public static long RefineGold(Rarity rarity) => 5000L * RefineCost(rarity);
+
         public static int SalvageStones(int enhance, Rarity rarity) =>
             (int)Math.Floor(SalvageRefund * TotalStonesInvested(enhance, rarity));
 

@@ -21,9 +21,19 @@ namespace P2D.Domain
         public int riderStar = 1;
         public string[] skillIds = new string[0];
 
+        /// <summary>Equipment set of every gear slot (SetCatalog id, empty = none), index = (int)EquipSlot.</summary>
+        public string[] slotSets = { "", "", "", "", "", "" };
+
         public BuildPreset WithAllSlots(GrowthPath path)
         {
             for (int i = 0; i < slotPaths.Length; i++) slotPaths[i] = path;
+            return this;
+        }
+
+        /// <summary>Puts <paramref name="setId"/> on the given slots (e.g. four of them for the 4-piece bonus).</summary>
+        public BuildPreset WithSet(string setId, params EquipSlot[] slots)
+        {
+            foreach (var slot in slots) slotSets[(int)slot] = setId;
             return this;
         }
     }
@@ -50,6 +60,7 @@ namespace P2D.Domain
                     enhance = build.enhance,
                     main = new StatModifier(stat, type, EquipmentRules.MainBase(stat, type, build.rarity)),
                     subs = AverageSubs(path, build.rarity, build.enhance),
+                    setId = build.slotSets != null ? build.slotSets[(int)slot] : "",
                 });
             }
 

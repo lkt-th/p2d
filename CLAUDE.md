@@ -35,8 +35,9 @@ Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules
 
 - Numbers in code and in `docs/Balance.md` must match. When you change a number, update the doc and the
   tests in the same commit.
-- After changing skills, riders, gear or enemy stats, run the balance simulator (Unity menu
-  **P2D → Balance Simulator**, ≥100 runs per floor for boss decisions) and update `docs/balance-report.md`.
+- After changing skills, riders, gear, sets or enemy stats, run the balance simulator (Unity menu
+  **P2D → Balance Simulator**, or batch mode `-executeMethod P2D.Editor.BalanceSimulatorCli.Run -balanceOut <f>.md
+  -balanceRuns 100 -balanceDodge 0.8`; ≥100 runs per floor) and update `docs/balance-report.md`.
 - Battle code must stay deterministic: every random roll goes through the battle's `IRandom`; never use
   `UnityEngine.Random`, `System.Random`, time, or `string.GetHashCode()` inside rules.
 - Save data uses only fields, arrays and `List<T>` (JsonUtility); bump `SaveMigrator.CurrentVersion` and add a
@@ -71,5 +72,6 @@ Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules
 
 ## Open decisions (ask the user)
 
-- Balance watch items: Arcane still clears fastest; Bastion boss fights take 80–107 s of a 120 s limit.
+- Balance watch items: Arcane still clears fastest; Bastion boss fights take 80–107 s of a 120 s limit;
+  Magma 4-piece is too strong on multi-hit Tempest, Ancient Star and Glacial are weak (proposals in balance-report.md).
 - PvP or not; always-online or partly offline.

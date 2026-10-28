@@ -15,6 +15,20 @@
 | [docs/UI-Portrait.md](docs/UI-Portrait.md) | หลักการ UI แนวตั้ง, การจัดโซนหน้าจอ, Wireframe ทุกหน้าหลัก, ท่าทางสัมผัส, Accessibility |
 | [docs/Unity-Tech.md](docs/Unity-Tech.md) | Tech stack, โครงสร้างโปรเจกต์, สถาปัตยกรรม, Data model + ตัวอย่างโค้ด C#, Safe Area/Canvas Scaler, Backend, ภาษาไทย |
 
+## เริ่มพัฒนา (Unity)
+
+- เปิดโฟลเดอร์ repo นี้ด้วย **Unity 6 LTS (6000.0.x)** — Unity จะสร้าง `ProjectSettings` ที่เหลือให้ตอนเปิดครั้งแรก
+- Player Settings ถูกตั้งเป็นแนวตั้งอัตโนมัติ (เมนู **P2D → Apply Portrait Player Settings** ใช้สั่งซ้ำได้)
+- รันเทสต์: **Window → General → Test Runner → EditMode → Run All**
+
+| โฟลเดอร์ | เนื้อหา |
+|---|---|
+| `Assets/_Project/Scripts/Domain` | กฎเกม C# ล้วน (ไม่พึ่ง UnityEngine): ค่าพลังมังกร, อุปกรณ์/Affinity, ผู้ใช้/ดาว/บัพนักล่า, สูตรต่อสู้, หอคอยรายสัปดาห์, ถ้ำล่าเกล็ด, อัญเชิญ |
+| `Assets/_Project/Scripts/Data` | ScriptableObject สำหรับกรอกข้อมูลในเอดิเตอร์ (เช่น `RiderDefinition`) |
+| `Assets/_Project/Scripts/Presentation` | UI แนวตั้ง: `SafeAreaFitter`, `PortraitCanvasScaler` |
+| `Assets/_Project/Scripts/Editor` | เครื่องมือเอดิเตอร์ |
+| `Assets/_Project/Tests/EditMode` | NUnit tests ที่ตรวจตัวเลขกับ `docs/Balance.md` |
+
 ## ระบบหลักโดยย่อ
 
 - **มังกร** — 5 ระยะวิวัฒนาการ (ลูกมังกร → มังกรโบราณ) แต่ละระยะปลดล็อกช่องอุปกรณ์และช่องสกิลเพิ่ม

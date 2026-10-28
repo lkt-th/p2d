@@ -1,0 +1,16 @@
+{
+    "name": "P2D.Data",
+    "rootNamespace": "P2D.Data",
+    "references": [
+        "P2D.Domain"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

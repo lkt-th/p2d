@@ -16,6 +16,9 @@ namespace P2D.Domain
 
         public static DateTime WeekStartUtc(int weekIndex) => Epoch.AddDays(7.0 * weekIndex);
 
+        /// <summary>Daily reset uses the same 05:00 ICT boundary.</summary>
+        public static int DayIndex(DateTime utcNow) => (int)Math.Floor((utcNow - Epoch).TotalDays);
+
         public static DateTime NextResetUtc(DateTime utcNow) => WeekStartUtc(WeekIndex(utcNow) + 1);
 
         /// <summary>Fallback only — the live theme comes from Remote Config by week index.</summary>

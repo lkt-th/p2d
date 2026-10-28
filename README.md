@@ -24,8 +24,11 @@
 | โฟลเดอร์ | เนื้อหา |
 |---|---|
 | `Assets/_Project/Scripts/Domain` | กฎเกม C# ล้วน (ไม่พึ่ง UnityEngine): ค่าพลังมังกร, อุปกรณ์/Affinity, ผู้ใช้/ดาว/บัพนักล่า, สูตรต่อสู้, หอคอยรายสัปดาห์, ถ้ำล่าเกล็ด, อัญเชิญ |
+| `Assets/_Project/Scripts/Domain/Battle` | ระบบต่อสู้แบบ deterministic (30 tick/วินาที, seed เดียวกัน + input log เดียวกัน = ผลเดียวกัน) ใช้ได้ทั้งเล่นจริง กวาดชั้น และให้เซิร์ฟเวอร์ replay ตรวจ |
+| `Assets/_Project/Scripts/Domain/Save` | ข้อมูลเซฟ `PlayerSave`, เซฟพร้อม checksum + backup, migration ข้ามเวอร์ชัน, ความคืบหน้าระหว่างออฟไลน์ (พลังล่า, คบเพลิง, รีเซ็ตรายสัปดาห์) |
+| `Assets/_Project/Scripts/Services` | ส่วนเชื่อม Unity: `SaveManager` (เซฟอัตโนมัติ/ตอนพับแอป), `FileSaveStorage` (เขียนไฟล์แบบ atomic), `JsonUtilitySaveSerializer`, `ServerClock` |
 | `Assets/_Project/Scripts/Data` | ScriptableObject สำหรับกรอกข้อมูลในเอดิเตอร์ (เช่น `RiderDefinition`) |
-| `Assets/_Project/Scripts/Presentation` | UI แนวตั้ง: `SafeAreaFitter`, `PortraitCanvasScaler` |
+| `Assets/_Project/Scripts/Presentation` | UI แนวตั้ง: `SafeAreaFitter`, `PortraitCanvasScaler` · `BattleRunner` เดินการต่อสู้แบบเรียลไทม์ (×1/×2/×3) และส่ง event ให้ฉาก |
 | `Assets/_Project/Scripts/Editor` | เครื่องมือเอดิเตอร์ |
 | `Assets/_Project/Tests/EditMode` | NUnit tests ที่ตรวจตัวเลขกับ `docs/Balance.md` |
 

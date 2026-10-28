@@ -1,19 +1,20 @@
 {
-    "name": "P2D.Editor",
-    "rootNamespace": "P2D.Editor",
-    "references": [
-        "P2D.Domain",
-        "P2D.Data"
-    ],
-    "includePlatforms": [
-        "Editor"
-    ],
-    "excludePlatforms": [],
-    "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": [],
-    "noEngineReferences": false
+  "name": "P2D.Editor",
+  "rootNamespace": "P2D.Editor",
+  "references": [
+    "P2D.Domain",
+    "P2D.Data",
+    "P2D.Presentation"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
 }

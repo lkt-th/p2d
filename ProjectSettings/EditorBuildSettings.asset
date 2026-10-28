@@ -4,6 +4,9 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/_Project/Scenes/GreyboxBattle.unity
+    guid: ec38517e91cc8594f95ccea2d31c0bb9
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

@@ -20,7 +20,8 @@
 
 - เปิดโฟลเดอร์ repo นี้ด้วย **Unity 6000.3.27f1** (ผ่าน Unity Hub → Add project from disk)
 - Player Settings ถูกตั้งเป็นแนวตั้งอัตโนมัติ (เมนู **P2D → Apply Portrait Player Settings** ใช้สั่งซ้ำได้)
-- รันเทสต์: **Window → General → Test Runner → EditMode → Run All**
+- รันเทสต์: **Window → General → Test Runner → EditMode / PlayMode → Run All**
+- ลองเล่นฉากต่อสู้ greybox: เปิด `Assets/_Project/Scenes/GreyboxBattle.unity` ตั้ง Game view เป็นแนวตั้ง (เช่น 1080×1920) แล้วกด Play — แตะศัตรูเพื่อเลือกเป้า, ปัดซ้าย/ขวาหรือกด DODGE เพื่อหลบ, ปุ่ม BUILD สลับ Build ตัวอย่าง (คีย์บอร์ด: 1/2/3 สกิล, Q สกิลบัญชาการ, Space หลบ)
 
 | โฟลเดอร์ | เนื้อหา |
 |---|---|

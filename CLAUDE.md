@@ -49,11 +49,15 @@ Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules
 - Run tests from the command line (editor must be closed):
   `& "C:\Program Files\Unity\Hub\Editor\6000.3.27f1\Editor\Unity.exe" -batchmode -projectPath C:\code\p2d -runTests -testPlatform EditMode -testResults <out>.xml -logFile <out>.log`
 - Commit the `.meta` file of every new asset or folder together with the asset.
-- Not built yet: scenes, prefabs, real UI screens, battle view, backend (UGS), cloud save, nest income
-  numbers, equipment set bonuses, sub-stat rolling, path visuals.
+- Art style is decided: **3D low-poly**, tilted top-down camera.
+- Playable greybox: `Assets/_Project/Scenes/GreyboxBattle.unity` (first in Build Settings). It holds only a
+  `GreyboxBattleBootstrap`, which builds camera, primitive dragon/enemies and the portrait uGUI HUD at
+  runtime (`GreyboxBattleView`) and drives the real `BattleSimulation` through `BattleRunner`. Regenerate the
+  scene with **P2D → Create Greybox Battle Scene**. PlayMode tests in `Tests/PlayMode` (2) cover it.
+- Not built yet: real art/prefabs, home/dragon/rider/spire screens, backend (UGS), cloud save, nest income
+  numbers, equipment set bonuses, sub-stat rolling, path visuals, URP (the greybox uses the built-in pipeline).
 
 ## Open decisions (ask the user)
 
-- Art style: 3D low-poly (recommended) vs 2D skeletal — needed before scenes/battle view.
 - Balance watch items: Arcane still clears fastest; Bastion boss fights take 80–107 s of a 120 s limit.
 - PvP or not; always-online or partly offline.

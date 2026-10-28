@@ -1,6 +1,6 @@
 # Path to Dragon (P2D) — notes for Claude
 
-Portrait-only mobile dragon-raising RPG in **Unity 6 LTS (6000.0.x)**. The player raises one dragon,
+Portrait-only mobile dragon-raising RPG in **Unity 6 (6000.3.27f1)**. The player raises one dragon,
 steers its growth through upgradable equipment (Growth Paths), swaps "riders" who buff it, and farms a
 weekly dungeon. The user writes in Thai — reply in Thai.
 
@@ -42,12 +42,13 @@ Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules
 - Server time only for resets (`ServerClock`), never the device clock.
 - Work happens on branch `claude/path-to-dragon-game-design-wcl2n7` (the repo has no `main` yet).
 
-## State at handoff (from the cloud session)
+## Current state
 
-- Unity-dependent scripts were only compile-checked against API stubs, never opened in the real editor.
-  First local task: open the project, let Unity generate `ProjectSettings` and `.meta` files, fix any
-  compile errors, run all EditMode tests, then commit the generated `.meta` files and `ProjectSettings`.
-- `Packages/manifest.json` pins guessed Unity 6 package versions; accept Unity's suggested versions if it complains.
+- Project opens in **Unity 6000.3.27f1** (`ProjectSettings/ProjectVersion.txt`); `.meta` files and
+  ProjectSettings are committed. All 98 EditMode tests pass in the real editor with no compiler warnings.
+- Run tests from the command line (editor must be closed):
+  `& "C:\Program Files\Unity\Hub\Editor\6000.3.27f1\Editor\Unity.exe" -batchmode -projectPath C:\code\p2d -runTests -testPlatform EditMode -testResults <out>.xml -logFile <out>.log`
+- Commit the `.meta` file of every new asset or folder together with the asset.
 - Not built yet: scenes, prefabs, real UI screens, battle view, backend (UGS), cloud save, nest income
   numbers, equipment set bonuses, sub-stat rolling, path visuals.
 

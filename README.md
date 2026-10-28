@@ -18,7 +18,7 @@
 
 ## เริ่มพัฒนา (Unity)
 
-- เปิดโฟลเดอร์ repo นี้ด้วย **Unity 6 LTS (6000.0.x)** — Unity จะสร้าง `ProjectSettings` ที่เหลือให้ตอนเปิดครั้งแรก
+- เปิดโฟลเดอร์ repo นี้ด้วย **Unity 6000.3.27f1** (ผ่าน Unity Hub → Add project from disk)
 - Player Settings ถูกตั้งเป็นแนวตั้งอัตโนมัติ (เมนู **P2D → Apply Portrait Player Settings** ใช้สั่งซ้ำได้)
 - รันเทสต์: **Window → General → Test Runner → EditMode → Run All**
 

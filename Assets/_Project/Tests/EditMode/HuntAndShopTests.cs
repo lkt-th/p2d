@@ -92,6 +92,36 @@ namespace P2D.Domain.Tests
         }
 
         [Test]
+        public void ZoneOne_NewPlayerWinsNormalsReliably()
+        {
+            int wins = 0;
+            const int runs = 200;
+            for (int seed = 0; seed < runs; seed++)
+            {
+                var save = NewGame();
+                var setup = HuntActions.BuildBattle(save, 1, EncounterKind.Normal, seed);
+                setup.auto = true;
+                if (new BattleSimulation(setup).RunToEnd() == BattleOutcome.Victory) wins++;
+            }
+            Assert.GreaterOrEqual(wins / (double)runs, 0.95, "zone 1 is the safe farm for a brand-new dragon");
+        }
+
+        [Test]
+        public void SpireFloorOne_NewPlayerWinsReliably()
+        {
+            int wins = 0;
+            const int runs = 200;
+            for (int seed = 0; seed < runs; seed++)
+            {
+                var save = NewGame();
+                var setup = GameActions.BuildSpireBattle(save, 1, Element.Fire, seed, new SpireTuning());
+                setup.auto = true;
+                if (new BattleSimulation(setup).RunToEnd() == BattleOutcome.Victory) wins++;
+            }
+            Assert.GreaterOrEqual(wins / (double)runs, 0.95);
+        }
+
+        [Test]
         public void HunterRider_RaisesBonus()
         {
             var save = NewGame();

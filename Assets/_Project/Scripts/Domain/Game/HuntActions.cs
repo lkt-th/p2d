@@ -30,14 +30,17 @@ namespace P2D.Domain
     {
         public static readonly HuntZone[] Zones =
         {
-            new HuntZone { zone = 1, name = "Ember Meadow", level = 12, element = Element.Fire },
-            new HuntZone { zone = 2, name = "Ash Forest", level = 32, element = Element.Fire },
-            new HuntZone { zone = 3, name = "Frost Hollow", level = 52, element = Element.Water },
-            new HuntZone { zone = 4, name = "Storm Ridge", level = 72, element = Element.Wind },
-            new HuntZone { zone = 5, name = "Star Ruins", level = 92, element = Element.Earth },
+            new HuntZone { zone = 1, name = "Ember Meadow", level = 8, element = Element.Fire },
+            new HuntZone { zone = 2, name = "Ash Forest", level = 19, element = Element.Fire },
+            new HuntZone { zone = 3, name = "Frost Hollow", level = 39, element = Element.Water },
+            new HuntZone { zone = 4, name = "Storm Ridge", level = 59, element = Element.Wind },
+            new HuntZone { zone = 5, name = "Star Ruins", level = 79, element = Element.Earth },
         };
 
-        /// <summary>Zones open with the dragon's stage (zone N needs stage N).</summary>
+        /// <summary>
+        /// Zones open with the dragon's stage (zone N needs stage N). Enemy level sits just below the
+        /// first level of that stage so a fresh dragon farms its newest zone safely (≥95% normal wins).
+        /// </summary>
         public static bool IsZoneOpen(PlayerSave save, int zone) => zone >= 1 && zone <= Zones.Length && zone <= save.dragon.stage;
 
         public static HuntZone Zone(int zone) => Zones[Math.Max(1, Math.Min(Zones.Length, zone)) - 1];

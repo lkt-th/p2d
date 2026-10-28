@@ -73,6 +73,19 @@ namespace P2D.PlayMode.Tests
             return null;
         }
 
+        /// <summary>The button labelled <paramref name="label"/> in the row whose text mentions <paramref name="rowText"/>.</summary>
+        static Button RowButton(string rowText, string label)
+        {
+            foreach (var b in Object.FindObjectsByType<Button>(FindObjectsSortMode.None))
+            {
+                if (!b.gameObject.activeInHierarchy || !b.GetComponentInChildren<Text>().text.StartsWith(label)) continue;
+                var row = b.transform.parent.parent;
+                foreach (var t in row.GetComponentsInChildren<Text>())
+                    if (t.text.Contains(rowText)) return b;
+            }
+            return null;
+        }
+
         [UnityTest]
         public IEnumerator HuntScreen_AutoHunt_SpendsStaminaAndPays()
         {
@@ -81,6 +94,7 @@ namespace P2D.PlayMode.Tests
             menu.Show(ScreenId.Hunt);
             yield return null;
 
+            menu.Save.dragon.level = 20; // keep the outcome out of the test: a Lv 20 dragon never loses zone 1
             int stamina = menu.Save.hunt.stamina;
             long gold = menu.Save.wallet.gold;
             var hunt = FindButton("AUTO HUNT x1");
@@ -105,7 +119,7 @@ namespace P2D.PlayMode.Tests
 
             menu.Show(ScreenId.Dragon);
             yield return null;
-            FindButton("WORKSHOP").onClick.Invoke(); // first equipped row = Heart Core
+            RowButton("HeartCore", "WORKSHOP").onClick.Invoke();
             yield return null;
 
             FindButton("Arcane").onClick.Invoke();

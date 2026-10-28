@@ -96,6 +96,7 @@ namespace P2D.Domain
         public HuntSave hunt = new HuntSave();
         public SummonPityState summonPity = new SummonPityState();
         public ShopSave shop = new ShopSave();
+        public NestSave nest = new NestSave();
         public List<LoadoutPresetSave> presets = new List<LoadoutPresetSave>();
 
         public static PlayerSave CreateNew(string playerId, string dragonName, DateTime utcNow, string starterRiderId)
@@ -110,6 +111,7 @@ namespace P2D.Domain
             save.dragon.mainRiderId = starterRiderId;
             save.riders.Add(new RiderState { riderId = starterRiderId, star = 1 });
             save.hunt.staminaUpdatedUtcTicks = utcNow.Ticks;
+            save.nest.lastCollectUtcTicks = utcNow.Ticks;
             save.spire.weekIndex = WeeklyCalendar.WeekIndex(utcNow);
             save.spire.lastTorchDay = WeeklyCalendar.DayIndex(utcNow);
             for (int i = 0; i < 3; i++)

@@ -17,9 +17,16 @@ namespace P2D.Domain
 
         public void SetBase(StatType stat, double value) => baseValues[(int)stat] = value;
 
+        /// <summary>
+        /// Stats that are already rates (CRIT 5%, CRIT DMG 150%, Element DMG …). A "+15%" on these
+        /// adds 15 points (150% → 165%) instead of multiplying the base.
+        /// </summary>
+        public static bool IsRateStat(StatType stat) =>
+            stat == StatType.CritRate || stat == StatType.CritDmg || stat == StatType.ElementDmg || stat == StatType.Resist;
+
         public void Add(StatModifier modifier)
         {
-            if (modifier.type == ModType.Flat) flat[(int)modifier.stat] += modifier.value;
+            if (modifier.type == ModType.Flat || IsRateStat(modifier.stat)) flat[(int)modifier.stat] += modifier.value;
             else percent[(int)modifier.stat] += modifier.value;
         }
 

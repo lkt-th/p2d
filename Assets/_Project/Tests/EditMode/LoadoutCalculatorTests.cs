@@ -26,8 +26,17 @@ namespace P2D.Domain.Tests
             loadout.equipped.Add(Claw(9));
 
             double baseAtk = DragonRules.BaseStat(StatType.ATK, 34, 2);
-            double expected = (baseAtk + 323) * 1.18;
+            // Kyren 4★ +18% ATK, Fury affinity 26 + 21 = 47 → Tier I +5% ATK
+            double expected = (baseAtk + 323) * 1.23;
             Assert.AreEqual(expected, LoadoutCalculator.Compute(loadout).Get(StatType.ATK), 1e-6);
+        }
+
+        [Test]
+        public void RateStats_AddPoints()
+        {
+            // Kyren 4★: CRIT DMG +27% → 150% + 27% = 177% (not 150% × 1.27)
+            var loadout = new Loadout { level = 1, stage = 1, mainRider = TestRiders.Kyren(), mainRiderState = new RiderState { star = 4 } };
+            Assert.AreEqual(1.77, LoadoutCalculator.Compute(loadout).Get(StatType.CritDmg), 1e-9);
         }
 
         [Test]

@@ -14,7 +14,8 @@ namespace P2D.Domain
     public enum BattleEventType
     {
         DragonHit, EnemyHit, Dodged, Telegraph, ShieldGained, ShieldAbsorbed,
-        SkillUsed, CommandUsed, EnemyKilled, EnemyEscaped, Enraged, Frozen, Ended
+        SkillUsed, CommandUsed, EnemyKilled, EnemyEscaped, Enraged, Frozen, Ended,
+        BurnTick, Healed, Reflected, CooldownsReduced, BuffGained
     }
 
     [Serializable]
@@ -46,17 +47,85 @@ namespace P2D.Domain
         public bool crit;
     }
 
+    /// <summary>
+    /// One dragon skill. Damage parts apply to the target(s); every other non-zero field is a
+    /// self effect applied after the damage (a skill may do both, e.g. hit + shield).
+    /// </summary>
     [Serializable]
     public sealed class SkillData
     {
         public string id;
+        public GrowthPath path;
+
+        /// <summary>Affinity tier of <see cref="path"/> needed to equip (1–4). Tier 4 = ultimate.</summary>
+        public int tier = 1;
         public SkillTarget target = SkillTarget.Single;
         public double multiplier = 1.5;
+
+        /// <summary>Hits per use; a single-target skill moves to the next enemy when its target dies.</summary>
+        public int hits = 1;
         public double cooldownSeconds = 6;
 
-        /// <summary>Self skills: shield as a fraction of max HP.</summary>
+        /// <summary>Extra Element DMG for this skill's hits (0.3 = +30%).</summary>
+        public double extraElementDamage;
+
+        /// <summary>Damage bonus against targets below <see cref="BattleSimulation.ExecuteThreshold"/> HP.</summary>
+        public double executeBonus;
+
+        /// <summary>Burn per second as a fraction of ATK, for <see cref="burnSeconds"/>.</summary>
+        public double burnPerSecond;
+        public double burnSeconds;
+
+        /// <summary>Shield as a fraction of max HP.</summary>
         public double shieldPercent;
         public double shieldSeconds;
+
+        /// <summary>Heal as a fraction of max HP.</summary>
+        public double healPercent;
+
+        public double dodgeBuff;
+        public double dodgeBuffSeconds;
+
+        /// <summary>Reflects this fraction of damage taken back to the attacker.</summary>
+        public double reflectPercent;
+        public double reflectSeconds;
+
+        /// <summary>Cuts the remaining cooldown of the other skills.</summary>
+        public double cooldownReduceSeconds;
+
+        public bool IsUltimate => tier >= 4;
+    }
+
+    /// <summary>
+    /// Battle-only effects of Path traits (tiers II–III) and resonances, built by PathTraitRules.
+    /// Stat traits (ATK %, HP %, SPD …) are already in the dragon's stats.
+    /// </summary>
+    [Serializable]
+    public struct PathBattleTraits
+    {
+        // Fury
+        public double critBurnPerSecond;
+        public double critBurnSeconds;
+        public double lowHpDamageBonus;
+
+        // Bastion
+        public double startShieldPercent;
+        public double reflectPercent;
+
+        // Tempest
+        public double dodgeBonus;
+        public int doubleHitEvery;
+
+        // Arcane
+        public int echoAfterSkills;
+
+        // Resonances
+        public double multiHitCritBonus;
+        public double lifesteal;
+        public double burnDamageBonus;
+        public double dodgeShieldPercent;
+        public double dodgeCooldownReduceSeconds;
+        public bool shieldScalesWithElement;
     }
 
     [Serializable]
@@ -93,6 +162,9 @@ namespace P2D.Domain
 
         /// <summary>Bosses: attack doubles after this many seconds. 0 = never.</summary>
         public double enrageSeconds;
+
+        /// <summary>HP at the start as a fraction of max (boss phases, continued fights).</summary>
+        public double startHpFraction = 1;
     }
 
     /// <summary>Dragon numbers the battle needs, usually built from a computed StatSheet.</summary>
@@ -132,6 +204,7 @@ namespace P2D.Domain
         public DragonCombatStats dragon;
         public List<SkillData> skills = new List<SkillData>();
         public CommandData command;
+        public PathBattleTraits traits;
         public List<EnemySpec> enemies = new List<EnemySpec>();
         public bool auto;
         public double timeLimitSeconds = 90;

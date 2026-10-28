@@ -17,6 +17,7 @@ namespace P2D.Domain
         public const int TelegraphTicks = 24;      // 0.8 s warning before a heavy attack
         public const int DodgeCooldownTicks = 30;  // one manual dodge per second
         public const double MaxGauge = 100;
+        public const double ExecuteThreshold = 0.30;
 
         public sealed class EnemyRuntime
         {
@@ -30,11 +31,26 @@ namespace P2D.Domain
             public int windupLeft;
             public bool dodgedWindup;
             public int escapeTicksLeft;
+            public double burnPerSecond;
+            public int burnTicksLeft;
+
+            public double HpFraction => spec.hp > 0 ? hp / spec.hp : 0;
+        }
+
+        struct HitOptions
+        {
+            public double multiplier;
+            public double extraElement;
+            public double executeBonus;
+            public double critBonus;
+            public double burnPerSecond;
+            public double burnSeconds;
         }
 
         readonly BattleSetup setup;
-        readonly bool replaying;
+        readonly PathBattleTraits traits;
         readonly IRandom random;
+        readonly bool replaying;
         readonly List<BattleInput> pending = new List<BattleInput>();
         readonly List<BattleInput> applied = new List<BattleInput>();
         readonly List<BattleEvent> events = new List<BattleEvent>();
@@ -42,11 +58,17 @@ namespace P2D.Domain
         readonly int timeLimitTicks;
 
         int dragonAttackTimer;
+        int basicAttackCount;
+        int skillsSinceEcho;
         int dodgeReadyTick;
         int buffTicksLeft;
         int shieldTicksLeft;
         int frozenTicksLeft;
+        int dodgeBuffTicksLeft;
+        int reflectTicksLeft;
         double attackBuff;
+        double dodgeBuff;
+        double reflectBuff;
 
         public int Tick { get; private set; }
         public BattleOutcome Outcome { get; private set; }
@@ -62,6 +84,9 @@ namespace P2D.Domain
         /// <summary>Inputs in the order they were applied, with their ticks — the replay log.</summary>
         public IReadOnlyList<BattleInput> AppliedInputs => applied;
 
+        /// <summary>True when the Arcane echo trait makes the next skill free of cooldown.</summary>
+        public bool EchoReady => traits.echoAfterSkills > 0 && skillsSinceEcho >= traits.echoAfterSkills;
+
         public double ElapsedSeconds => Tick / (double)TicksPerSecond;
 
         /// <param name="replaying">True when re-running a recorded log: autopilot decisions come from the log.</param>
@@ -70,6 +95,7 @@ namespace P2D.Domain
             if (setup.enemies.Count == 0) throw new ArgumentException("A battle needs at least one enemy.");
             this.setup = setup;
             this.replaying = replaying;
+            traits = setup.traits;
             random = new SeededRandom(setup.seed);
             Auto = setup.auto;
             DragonMaxHp = setup.dragon.hp;
@@ -82,15 +108,19 @@ namespace P2D.Domain
             Enemies = new List<EnemyRuntime>();
             foreach (var spec in setup.enemies)
             {
+                double startFraction = spec.startHpFraction > 0 ? Math.Min(1, spec.startHpFraction) : 1;
                 Enemies.Add(new EnemyRuntime
                 {
                     spec = spec,
-                    hp = spec.hp,
+                    hp = spec.hp * startFraction,
                     attackTimer = spec.attackIntervalSeconds > 0 ? ToTicks(spec.attackIntervalSeconds) : 0,
                     heavyTimer = spec.heavyIntervalSeconds > 0 ? ToTicks(spec.heavyIntervalSeconds) : 0,
                     escapeTicksLeft = spec.escapeSeconds > 0 ? ToTicks(spec.escapeSeconds + setup.escapeDelaySeconds) : 0,
                 });
             }
+
+            if (traits.startShieldPercent > 0)
+                GainShield(traits.startShieldPercent * DragonMaxHp, setup.timeLimitSeconds);
         }
 
         public static int ToTicks(double seconds) => (int)Math.Round(seconds * TicksPerSecond);
@@ -127,6 +157,9 @@ namespace P2D.Domain
             ApplyPendingInputs();
             if (Auto && !replaying) RunAutoPilot();
             TickTimers();
+            if (Ended()) return false;
+
+            TickBurns();
             if (Ended()) return false;
 
             DragonBasicAttack();
@@ -181,22 +214,58 @@ namespace P2D.Domain
         {
             if (!IsSkillReady(slot)) return false;
             var skill = setup.skills[slot];
-            switch (skill.target)
+            bool echo = EchoReady;
+
+            var hit = new HitOptions
             {
-                case SkillTarget.Single:
-                    HitEnemy(CurrentTarget(), skill.multiplier);
-                    break;
-                case SkillTarget.All:
-                    for (int i = 0; i < Enemies.Count; i++)
-                        if (Enemies[i].alive) HitEnemy(i, skill.multiplier);
-                    break;
-                case SkillTarget.Self:
-                    GainShield(skill.shieldPercent * DragonMaxHp, skill.shieldSeconds);
-                    break;
+                multiplier = skill.multiplier,
+                extraElement = skill.extraElementDamage,
+                executeBonus = skill.executeBonus,
+                critBonus = skill.hits > 1 ? traits.multiHitCritBonus : 0,
+                burnPerSecond = skill.burnPerSecond,
+                burnSeconds = skill.burnSeconds,
+            };
+            int hits = Math.Max(1, skill.hits);
+            if (skill.target == SkillTarget.Single)
+            {
+                for (int h = 0; h < hits; h++) HitEnemy(CurrentTarget(), hit);
             }
-            skillCooldowns[slot] = Math.Max(1, ToTicks(CombatFormulas.Cooldown(skill.cooldownSeconds, setup.dragon.skillHaste)));
+            else if (skill.target == SkillTarget.All)
+            {
+                for (int h = 0; h < hits; h++)
+                    for (int i = 0; i < Enemies.Count; i++)
+                        if (Enemies[i].alive) HitEnemy(i, hit);
+            }
+
+            ApplySelfEffects(skill, slot);
+
+            int cooldown = Math.Max(1, ToTicks(CombatFormulas.Cooldown(skill.cooldownSeconds, setup.dragon.skillHaste)));
+            skillCooldowns[slot] = echo ? 0 : cooldown;
+            skillsSinceEcho = echo ? 0 : skillsSinceEcho + 1;
             Emit(BattleEventType.SkillUsed, -1, slot);
             return true;
+        }
+
+        void ApplySelfEffects(SkillData skill, int slot)
+        {
+            if (skill.shieldPercent > 0)
+                GainShield(skill.shieldPercent * DragonMaxHp, skill.shieldSeconds);
+            if (skill.healPercent > 0)
+                Heal(skill.healPercent * DragonMaxHp);
+            if (skill.dodgeBuff > 0)
+            {
+                dodgeBuff = skill.dodgeBuff;
+                dodgeBuffTicksLeft = ToTicks(skill.dodgeBuffSeconds);
+                Emit(BattleEventType.BuffGained, -1, skill.dodgeBuff);
+            }
+            if (skill.reflectPercent > 0)
+            {
+                reflectBuff = skill.reflectPercent;
+                reflectTicksLeft = ToTicks(skill.reflectSeconds);
+                Emit(BattleEventType.BuffGained, -1, skill.reflectPercent);
+            }
+            if (skill.cooldownReduceSeconds > 0)
+                ReduceCooldowns(ToTicks(skill.cooldownReduceSeconds), slot);
         }
 
         bool UseCommand()
@@ -216,7 +285,7 @@ namespace P2D.Domain
                     break;
                 case CommandKind.DamageAll:
                     for (int i = 0; i < Enemies.Count; i++)
-                        if (Enemies[i].alive) HitEnemy(i, command.value);
+                        if (Enemies[i].alive) HitEnemy(i, new HitOptions { multiplier = command.value });
                     break;
                 case CommandKind.Freeze:
                     frozenTicksLeft = ToTicks(command.durationSeconds);
@@ -235,7 +304,7 @@ namespace P2D.Domain
             return true;
         }
 
-        /// <summary>Auto mode: command when full, shields when hurt, otherwise the first ready attack skill.</summary>
+        /// <summary>Auto mode: command when full, defensive skills when hurt, otherwise the first ready attack.</summary>
         void RunAutoPilot()
         {
             if (IsCommandReady && Apply(new BattleInput(Tick, BattleInputType.UseCommand)))
@@ -244,12 +313,25 @@ namespace P2D.Domain
             for (int slot = 0; slot < skillCooldowns.Length; slot++)
             {
                 if (!IsSkillReady(slot)) continue;
-                bool isShield = setup.skills[slot].target == SkillTarget.Self;
-                if (isShield && (DragonHp > DragonMaxHp * 0.6 || Shield > 0)) continue;
+                var skill = setup.skills[slot];
+                if (skill.target == SkillTarget.Self)
+                {
+                    bool hurt = DragonHp <= DragonMaxHp * 0.6;
+                    bool defensive = skill.shieldPercent > 0 || skill.healPercent > 0;
+                    if (defensive && (!hurt || (skill.healPercent <= 0 && Shield > 0))) continue;
+                    if (skill.cooldownReduceSeconds > 0 && !AnyOtherSkillCooling(slot)) continue;
+                }
                 if (Apply(new BattleInput(Tick, BattleInputType.UseSkill, slot)))
                     applied.Add(new BattleInput(Tick, BattleInputType.UseSkill, slot));
                 break;
             }
+        }
+
+        bool AnyOtherSkillCooling(int slot)
+        {
+            for (int i = 0; i < skillCooldowns.Length; i++)
+                if (i != slot && skillCooldowns[i] > 0) return true;
+            return false;
         }
 
         // ---- per-tick simulation -------------------------------------------------------
@@ -261,16 +343,38 @@ namespace P2D.Domain
 
             if (buffTicksLeft > 0 && --buffTicksLeft == 0) attackBuff = 0;
             if (shieldTicksLeft > 0 && --shieldTicksLeft == 0) Shield = 0;
+            if (dodgeBuffTicksLeft > 0 && --dodgeBuffTicksLeft == 0) dodgeBuff = 0;
+            if (reflectTicksLeft > 0 && --reflectTicksLeft == 0) reflectBuff = 0;
 
             if (timeLimitTicks > 0 && Tick >= timeLimitTicks)
                 Finish(BattleOutcome.Timeout);
+        }
+
+        void TickBurns()
+        {
+            for (int i = 0; i < Enemies.Count; i++)
+            {
+                var e = Enemies[i];
+                if (!e.alive || e.burnTicksLeft <= 0) continue;
+                e.burnTicksLeft--;
+                if (e.burnTicksLeft % TicksPerSecond != 0) continue;
+
+                // Burn ignores DEF and crits; Element DMG and the Fury+Arcane resonance raise it.
+                double damage = e.burnPerSecond * setup.dragon.attack
+                    * (1 + setup.dragon.elementDamage) * (1 + traits.burnDamageBonus);
+                DamageEnemy(i, e, damage, false, BattleEventType.BurnTick);
+            }
         }
 
         void DragonBasicAttack()
         {
             if (--dragonAttackTimer > 0) return;
             dragonAttackTimer = AttackIntervalTicks(setup.dragon.speed);
-            HitEnemy(CurrentTarget(), 1.0);
+            basicAttackCount++;
+
+            HitEnemy(CurrentTarget(), new HitOptions { multiplier = 1.0 });
+            if (traits.doubleHitEvery > 0 && basicAttackCount % traits.doubleHitEvery == 0)
+                HitEnemy(CurrentTarget(), new HitOptions { multiplier = 1.0, critBonus = traits.multiHitCritBonus });
         }
 
         void EnemiesAct()
@@ -319,7 +423,7 @@ namespace P2D.Domain
                 if (e.spec.attackIntervalSeconds > 0 && --e.attackTimer <= 0)
                 {
                     e.attackTimer = ToTicks(e.spec.attackIntervalSeconds);
-                    if (random.NextDouble() < PassiveDodgeChance(e)) Emit(BattleEventType.Dodged, i, 0);
+                    if (random.NextDouble() < PassiveDodgeChance(e)) OnDodged(i);
                     else HitDragon(i, e, 1.0);
                     if (DragonHp <= 0) return;
                 }
@@ -333,7 +437,7 @@ namespace P2D.Domain
             if (dodged)
             {
                 Gauge = Math.Min(MaxGauge, Gauge + 10);
-                Emit(BattleEventType.Dodged, index, 0);
+                OnDodged(index);
             }
             else
             {
@@ -341,8 +445,17 @@ namespace P2D.Domain
             }
         }
 
+        void OnDodged(int enemy)
+        {
+            Emit(BattleEventType.Dodged, enemy, 0);
+            if (traits.dodgeShieldPercent > 0)
+                GainShield(traits.dodgeShieldPercent * DragonMaxHp, 5);
+            if (traits.dodgeCooldownReduceSeconds > 0)
+                ReduceCooldowns(ToTicks(traits.dodgeCooldownReduceSeconds), -1);
+        }
+
         double PassiveDodgeChance(EnemyRuntime e) =>
-            CombatFormulas.AutoDodgeChance(setup.dragon.speed, e.spec.speed, setup.dragon.dodgeBonus);
+            CombatFormulas.AutoDodgeChance(setup.dragon.speed, e.spec.speed, setup.dragon.dodgeBonus + traits.dodgeBonus + dodgeBuff);
 
         // ---- damage ---------------------------------------------------------------------
 
@@ -354,29 +467,44 @@ namespace P2D.Domain
             return -1;
         }
 
-        void HitEnemy(int index, double multiplier)
+        void HitEnemy(int index, HitOptions hit)
         {
             if (index < 0) return;
             var e = Enemies[index];
             if (!e.alive) return;
 
+            double extra = 1.0;
+            if (hit.executeBonus > 0 && e.HpFraction < ExecuteThreshold) extra *= 1 + hit.executeBonus;
+            if (traits.lowHpDamageBonus > 0) extra *= 1 + traits.lowHpDamageBonus * (1 - e.HpFraction);
+
             var input = new DamageInput
             {
                 attack = setup.dragon.attack * (1 + attackBuff),
-                skillMultiplier = multiplier,
+                skillMultiplier = hit.multiplier,
                 attackerLevel = setup.dragonLevel,
                 targetDefense = e.spec.defense,
-                elementDamageBonus = setup.dragon.elementDamage,
+                elementDamageBonus = setup.dragon.elementDamage + hit.extraElement,
                 attackerElement = setup.dragonElement,
                 targetElement = e.spec.element,
-                critRate = setup.dragon.critRate,
+                critRate = setup.dragon.critRate + hit.critBonus,
                 critDamage = setup.dragon.critDamage,
+                extraMultiplier = extra,
             };
             bool crit;
             double damage = CombatFormulas.RollDamage(input, random, out crit);
-            e.hp = Math.Max(0, e.hp - damage);
             Gauge = Math.Min(MaxGauge, Gauge + 2);
-            events.Add(new BattleEvent { tick = Tick, type = BattleEventType.EnemyHit, enemy = index, amount = damage, crit = crit });
+            DamageEnemy(index, e, damage, crit, BattleEventType.EnemyHit);
+            if (!e.alive) return;
+
+            if (hit.burnPerSecond > 0) ApplyBurn(e, hit.burnPerSecond, hit.burnSeconds);
+            if (crit && traits.critBurnPerSecond > 0) ApplyBurn(e, traits.critBurnPerSecond, traits.critBurnSeconds);
+        }
+
+        void DamageEnemy(int index, EnemyRuntime e, double damage, bool crit, BattleEventType type)
+        {
+            e.hp = Math.Max(0, e.hp - damage);
+            events.Add(new BattleEvent { tick = Tick, type = type, enemy = index, amount = damage, crit = crit });
+            if (traits.lifesteal > 0) Heal(damage * traits.lifesteal);
 
             if (e.hp <= 0)
             {
@@ -384,6 +512,13 @@ namespace P2D.Domain
                 Emit(BattleEventType.EnemyKilled, index, 0);
                 CurrentTarget();
             }
+        }
+
+        static void ApplyBurn(EnemyRuntime e, double perSecond, double seconds)
+        {
+            // Stronger burn wins; the duration refreshes.
+            e.burnPerSecond = Math.Max(e.burnPerSecond, perSecond);
+            e.burnTicksLeft = Math.Max(e.burnTicksLeft, ToTicks(seconds));
         }
 
         void HitDragon(int index, EnemyRuntime e, double multiplier)
@@ -402,6 +537,10 @@ namespace P2D.Domain
             bool crit;
             double damage = CombatFormulas.RollDamage(input, random, out crit);
 
+            double reflect = traits.reflectPercent + reflectBuff;
+            if (reflect > 0)
+                DamageEnemy(index, e, damage * reflect, false, BattleEventType.Reflected);
+
             if (Shield > 0)
             {
                 double absorbed = Math.Min(Shield, damage);
@@ -417,9 +556,25 @@ namespace P2D.Domain
 
         void GainShield(double amount, double seconds)
         {
+            if (traits.shieldScalesWithElement) amount *= 1 + setup.dragon.elementDamage;
             Shield += amount;
             shieldTicksLeft = Math.Max(shieldTicksLeft, ToTicks(seconds));
             Emit(BattleEventType.ShieldGained, -1, amount);
+        }
+
+        void Heal(double amount)
+        {
+            if (amount <= 0 || DragonHp <= 0) return;
+            double before = DragonHp;
+            DragonHp = Math.Min(DragonMaxHp, DragonHp + amount);
+            if (DragonHp > before) Emit(BattleEventType.Healed, -1, DragonHp - before);
+        }
+
+        void ReduceCooldowns(int ticks, int exceptSlot)
+        {
+            for (int i = 0; i < skillCooldowns.Length; i++)
+                if (i != exceptSlot) skillCooldowns[i] = Math.Max(0, skillCooldowns[i] - ticks);
+            Emit(BattleEventType.CooldownsReduced, -1, ticks);
         }
 
         // ---- outcome --------------------------------------------------------------------

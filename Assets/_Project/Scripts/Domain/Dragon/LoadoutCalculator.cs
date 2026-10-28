@@ -15,8 +15,8 @@ namespace P2D.Domain
     }
 
     /// <summary>
-    /// Order: dragon base (level × stage) → gear main/sub → main rider ×1.0 → supports ×0.3.
-    /// Path traits and set bonuses are added by the caller once their data exists.
+    /// Order: dragon base (level × stage) → gear main/sub → main rider ×1.0 → supports ×0.3
+    /// → Path trait stats (from affinity tiers and resonances). Set bonuses come later.
     /// Recompute only when the loadout changes, never per frame.
     /// </summary>
     public static class LoadoutCalculator
@@ -40,8 +40,15 @@ namespace P2D.Domain
                 if (loadout.supportRiders[i] != null)
                     sheet.AddRange(RiderRules.Buffs(loadout.supportRiders[i], loadout.supportRiderStates[i], RiderRules.SupportRatio));
 
+            sheet.AddRange(PathTraitRules.StatModifiers(Affinity(loadout), LegacyResonance(loadout)));
             return sheet;
         }
+
+        public static PathBattleTraits BattleTraits(Loadout loadout) =>
+            PathTraitRules.BattleTraits(Affinity(loadout), LegacyResonance(loadout));
+
+        static bool LegacyResonance(Loadout loadout) =>
+            loadout.mainRider != null && loadout.mainRider.legacyLowersResonance;
 
         public static Dictionary<GrowthPath, int> Affinity(Loadout loadout)
         {

@@ -72,6 +72,7 @@ namespace P2D.Presentation.UI
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
             t.verticalOverflow = VerticalWrapMode.Overflow;
             t.raycastTarget = false;
+            rt.gameObject.AddComponent<ThaiMarkPositioner>();
             return t;
         }
 

@@ -196,6 +196,7 @@ namespace P2D.Domain
             if (!string.IsNullOrEmpty(reward.riderId)) reward.riderIsNew = GrantRider(save, reward.riderId);
 
             Story(save).cleared = index;
+            MissionActions.Record(save, MissionEvent.StoryClear, 1);
             reward.unlocked = FeatureUnlocks.OpenedBy(index);
             return reward;
         }

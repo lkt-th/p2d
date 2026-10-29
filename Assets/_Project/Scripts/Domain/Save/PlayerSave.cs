@@ -101,6 +101,7 @@ namespace P2D.Domain
         public ShopSave shop = new ShopSave();
         public NestSave nest = new NestSave();
         public StorySave story = new StorySave();
+        public MissionSave missions = new MissionSave();
         public List<LoadoutPresetSave> presets = new List<LoadoutPresetSave>();
 
         public static PlayerSave CreateNew(string playerId, string dragonName, DateTime utcNow, string starterRiderId)

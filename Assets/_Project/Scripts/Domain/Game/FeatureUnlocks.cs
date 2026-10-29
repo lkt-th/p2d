@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace P2D.Domain
 {
-    public enum Feature { Enhance, Riders, Hunt, Spire, Workshop }
+    public enum Feature { Enhance, Riders, Hunt, Spire, Workshop, Missions }
 
     /// <summary>
     /// Features open as story stages are cleared (docs/GDD.md §11, Balance §14.1). The rule lives in
@@ -15,6 +15,7 @@ namespace P2D.Domain
         {
             switch (feature)
             {
+                case Feature.Missions: return 3;  // 1-3
                 case Feature.Enhance: return 6;   // 1-6
                 case Feature.Riders: return 10;   // 1-10
                 case Feature.Hunt: return 10;     // 1-10
@@ -30,6 +31,7 @@ namespace P2D.Domain
         {
             switch (feature)
             {
+                case Feature.Missions: return Loc.T("Daily & weekly missions");
                 case Feature.Enhance: return Loc.T("Enhance");
                 case Feature.Riders: return Loc.T("Riders & Summon");
                 case Feature.Hunt: return Loc.T("Hunting Grounds");

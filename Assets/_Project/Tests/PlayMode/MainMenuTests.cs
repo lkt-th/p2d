@@ -338,5 +338,34 @@ namespace P2D.PlayMode.Tests
             Assert.AreEqual(ScreenId.Spire, back.Current);
             Assert.AreEqual(SceneManager.GetActiveScene().name, BattleHandoff.MenuScene);
         }
+
+        [UnityTest]
+        public IEnumerator MissionsScreen_FeedThenClaim()
+        {
+            var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
+            yield return null;
+            var save = menu.Save;
+            save.story.cleared = StoryActions.TotalStages;
+            menu.Show(ScreenId.Dragon);
+            yield return null;
+            FindButton("FEED").onClick.Invoke(); // records the daily "feed the dragon" mission
+            yield return null;
+
+            menu.Show(ScreenId.Nest);
+            yield return null;
+            FindButton("MISSIONS").onClick.Invoke();
+            yield return null;
+            Assert.AreEqual(ScreenId.Missions, menu.Current);
+
+            long crystals = save.wallet.crystals;
+            var claim = RowButton("Feed the dragon", "CLAIM");
+            Assert.IsNotNull(claim);
+            Assert.IsTrue(claim.interactable);
+            claim.onClick.Invoke();
+            yield return null;
+            Assert.AreEqual(crystals + 10, save.wallet.crystals);
+            Assert.IsNotNull(RowButton("Feed the dragon", "CLAIMED"), "the row shows it was claimed");
+            Assert.IsFalse(RowButton("Feed the dragon", "CLAIMED").interactable);
+        }
     }
 }

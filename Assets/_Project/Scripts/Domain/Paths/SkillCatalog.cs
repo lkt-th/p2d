@@ -50,7 +50,7 @@ namespace P2D.Domain
             new SkillData { id = "time_mirror", path = GrowthPath.Arcane, tier = 3, target = SkillTarget.Self,
                 multiplier = 0, cooldownSeconds = 15, cooldownReduceSeconds = 4 },
             new SkillData { id = "galaxy_rain", path = GrowthPath.Arcane, tier = 4, target = SkillTarget.All,
-                multiplier = 1.2, hits = 3, cooldownSeconds = 30, extraElementDamage = 0.50 },
+                multiplier = 0.8, hits = 3, cooldownSeconds = 30, extraElementDamage = 0.50 },
         };
 
         public static IReadOnlyList<SkillData> All => all;

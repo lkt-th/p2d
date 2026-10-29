@@ -148,7 +148,7 @@ namespace P2D.Domain
             ["Storm Plume"] = "ขนนกพายุ",
             ["Ancient Star"] = "ดาราโบราณ",
             ["ATK +12%"] = "ATK +12%",
-            ["A crit triggers a fire burst for 40% ATK (once per second)"] = "คริติคอลทำให้เกิดระเบิดเพลิง 40% ATK (วินาทีละครั้ง)",
+            ["A crit triggers a fire burst for 40% ATK (once every 2 s)"] = "คริติคอลทำให้เกิดระเบิดเพลิง 40% ATK (ทุก 2 วินาที)",
             ["DEF +15%"] = "DEF +15%",
             ["Reflect 40% of damage taken while shielded"] = "ขณะมีโล่ สะท้อนความเสียหาย 40%",
             ["SPD +12"] = "SPD +12",

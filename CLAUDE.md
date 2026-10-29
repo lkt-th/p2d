@@ -76,7 +76,7 @@ Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules
 
 ## Open decisions (ask the user)
 
-- Balance watch items: Arcane still clears fastest; Bastion is the slowest path by design (round 10: basics +7% max HP, bosses 62–101 s of 120, Golem 100%);
-  Magma 4-piece (40% burst, 1 s cooldown) still leads the set builds on Tempest (75% auto boss wins vs Storm 54%); see balance-report.md.
+- Balance watch items: Bastion is the slowest path by design (round 10: basics +7% max HP, bosses 62–101 s of 120, Golem 100%); round 11 cut galaxy_rain to 80% × 3 (B5 Arcane boss 28 s, Fury 29 s) and gave the Magma burst a 2 s cooldown (Tempest+Magma auto 54% = Storm). Left: B4 Arcane still clears normal floors fastest (7.4 s vs 10.8) and some B4 auto builds beat the boss more than the 50% target (Fury+Tempest 61%);
+  see balance-report.md.
 - Weekly spire affixes are on (round 8: theme ATK +10%, Thick hide DEF +15%, Mist crit −5, Rush 75 s). Mist weeks still drop the B2 Fury boss to 12–19%; watch playtests (balance-report.md "Affix").
 - PvP or not; always-online or partly offline.

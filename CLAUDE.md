@@ -21,7 +21,7 @@ weekly dungeon. The user writes in Thai — reply in Thai.
 | `P2D.Services` | `Scripts/Services` | Unity glue: `SaveManager`, `FileSaveStorage`, `JsonUtilitySaveSerializer`, `ServerClock`. |
 | `P2D.Presentation` | `Scripts/Presentation` | `SafeAreaFitter`, `PortraitCanvasScaler`, `BattleRunner`. |
 | `P2D.Editor` | `Scripts/Editor` | Portrait player-settings hook, **P2D → Balance Simulator** window. |
-| `P2D.Domain.Tests` | `Tests/EditMode` | NUnit EditMode tests (181). |
+| `P2D.Domain.Tests` | `Tests/EditMode` | NUnit EditMode tests (182). |
 | `P2D.PlayMode.Tests` | `Tests/PlayMode` | PlayMode tests for the greybox scenes (30). |
 
 Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules`, `RiderCatalog`,

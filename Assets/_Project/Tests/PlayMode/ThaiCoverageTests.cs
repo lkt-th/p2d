@@ -47,7 +47,7 @@ namespace P2D.PlayMode.Tests
             if (SaveManager.Instance != null) Object.DestroyImmediate(SaveManager.Instance.gameObject);
             SaveManager.StorageOverride = null;
             LanguageSetting.Override = null;
-            SpireAffixes.Live = false;
+            SpireAffixes.Live = true;
             Loc.Current = Language.English;
             foreach (var go in Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None))
                 if (go.transform.parent == null && go.name != "Code-based tests runner") Object.Destroy(go);
@@ -107,7 +107,7 @@ namespace P2D.PlayMode.Tests
             save.spire.highestFloor = 20;       // sweep rows, boss claims
             save.spire.pendingChestFloor = 25;  // the weekly chest row
             save.spire.catchUpFloors = 10;      // the catch-up row
-            SpireAffixes.Live = true;           // the affix row (off in the live game for now)
+            SpireAffixes.Live = true;           // the affix row
             PresetActions.Store(save, 0);       // a filled preset next to empty ones
             save.wallet.pactSigils = 30;
             save.wallet.refineStones = 10;

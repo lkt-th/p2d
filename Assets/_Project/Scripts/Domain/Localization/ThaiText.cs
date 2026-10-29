@@ -437,7 +437,7 @@ namespace P2D.Domain
             ["Rush"] = "เร่งรีบ",
             ["Enemies ATK +10%"] = "ศัตรู ATK +10%",
             ["Enemies DEF +15%, attack 10% slower"] = "ศัตรู DEF +15% แต่โจมตีช้าลง 10%",
-            ["Dragon CRIT Rate −10%"] = "อัตราคริของมังกร −10%",
+            ["Dragon CRIT Rate −5%"] = "อัตราคริของมังกร −5%",
             ["Main rider's pact buffs +25%"] = "บัพสัญญาของผู้ใช้หลัก +25%",
             ["75 s limit on every floor but the boss, +20% first-clear materials"] = "ทุกชั้นยกเว้นบอสจำกัดเวลา 75 วินาที วัตถุดิบผ่านครั้งแรก +20%",
             ["Set {0}"] = "ชุด {0}",

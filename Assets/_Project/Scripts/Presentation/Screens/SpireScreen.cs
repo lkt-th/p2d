@@ -61,7 +61,7 @@ namespace P2D.Presentation.Screens
             }
 
             var type = SpireRules.TypeOf(next);
-            var enemies = SpireEnemyFactory.Floor(save.spire.bracket, next, theme.element, Menu.Tuning);
+            var enemies = GameActions.BuildSpireBattle(save, next, theme.element, 0, Menu.Tuning).enemies; // with this week's affixes
             var rewards = SpireRules.FirstClearRewards(next, save.spire.bracket);
             double power = LoadoutCalculator.Compute(GameActions.ToLoadout(save)).PowerScore();
 

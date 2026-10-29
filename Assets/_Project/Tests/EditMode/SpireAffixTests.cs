@@ -7,8 +7,11 @@ namespace P2D.Domain.Tests
     {
         static readonly DateTime Now = new DateTime(2026, 10, 30, 3, 0, 0, DateTimeKind.Utc);
 
+        [SetUp]
+        public void SetUp() => SpireAffixes.Live = false; // build affix-free battles to compare against
+
         [TearDown]
-        public void TearDown() => SpireAffixes.Live = false;
+        public void TearDown() => SpireAffixes.Live = true;
 
         static PlayerSave NewGame()
         {
@@ -53,7 +56,7 @@ namespace P2D.Domain.Tests
 
             var mist = GameActions.BuildSpireBattle(save, 5, Element.Fire, 1, new SpireTuning());
             SpireAffixes.Apply(mist, loadout, new[] { SpireAffix.Mist }, 5);
-            Assert.AreEqual(Math.Max(0, plain.dragon.critRate - 0.1), mist.dragon.critRate, 1e-9);
+            Assert.AreEqual(Math.Max(0, plain.dragon.critRate - SpireAffixes.MistCritRate), mist.dragon.critRate, 1e-9);
 
             var blessed = GameActions.BuildSpireBattle(save, 5, Element.Fire, 1, new SpireTuning());
             SpireAffixes.Apply(blessed, loadout, new[] { SpireAffix.RiderBlessing }, 5);
@@ -61,7 +64,7 @@ namespace P2D.Domain.Tests
         }
 
         [Test]
-        public void OffByDefault_LiveSwitchAppliesThem()
+        public void LiveSwitch_AppliesThemToSpireBattles()
         {
             var save = NewGame();
             Assert.IsNull(SpireAffixes.Current(save));

@@ -16,7 +16,7 @@ namespace P2D.Domain
         public const double ThemeAttackBonus = 0.10;
         public const double ThickHideDefense = 0.15;
         public const double ThickHideSlow = 0.10;
-        public const double MistCritRate = 0.10;
+        public const double MistCritRate = 0.05;
         public const double BlessingRatio = 0.25;
         public const double RushSeconds = 75;
         public const double RushRewardBonus = 0.20;
@@ -24,11 +24,8 @@ namespace P2D.Domain
         static readonly SpireAffix[] Positive = { SpireAffix.RiderBlessing, SpireAffix.Rush };
         static readonly SpireAffix[] Negative = { SpireAffix.ThickHide, SpireAffix.Mist };
 
-        /// <summary>
-        /// Off until the numbers are signed off: with them the B2 boss and the B4 Bastion boss get much
-        /// harder (balance-report.md, "Affix"); softened in round 7. The simulator can run them either way.
-        /// </summary>
-        public static bool Live = false;
+        /// <summary>On since round 7 (balance-report.md, "Affix"); tests and the simulator can turn it off for an affix-free baseline.</summary>
+        public static bool Live = true;
 
         /// <summary>This week's affixes in live spire battles, or null while affixes are off.</summary>
         public static SpireAffix[] Current(PlayerSave save) => Live ? ForWeek(save.spire.weekIndex) : null;
@@ -96,7 +93,7 @@ namespace P2D.Domain
             {
                 case SpireAffix.ThemeSurge: return Loc.T("Enemies ATK +10%");
                 case SpireAffix.ThickHide: return Loc.T("Enemies DEF +15%, attack 10% slower");
-                case SpireAffix.Mist: return Loc.T("Dragon CRIT Rate −10%");
+                case SpireAffix.Mist: return Loc.T("Dragon CRIT Rate −5%");
                 case SpireAffix.RiderBlessing: return Loc.T("Main rider's pact buffs +25%");
                 default: return Loc.T("75 s limit on every floor but the boss, +20% first-clear materials");
             }

@@ -310,6 +310,11 @@ namespace P2D.Domain
             ["copy +1"] = "สำเนา +1",
             ["Summoned {0}"] = "อัญเชิญ {0} ครั้ง",
             ["Not enough sigils"] = "ตราสัญญาไม่พอ",
+            ["A free pull is waiting today"] = "วันนี้มีอัญเชิญฟรีรออยู่",
+            ["Next free pull in {0}"] = "อัญเชิญฟรีครั้งถัดไปใน {0}",
+            ["FREE x1"] = "ฟรี x1",
+            ["Free pull used"] = "ใช้อัญเชิญฟรีแล้ว",
+            ["Come back tomorrow for the next free pull"] = "พรุ่งนี้มาอัญเชิญฟรีได้อีก",
 
             // ---- shop ---------------------------------------------------------------------------
             ["Soul shards <b>{0}</b>   Crystals <b>{1}</b>"] = "เศษวิญญาณ <b>{0}</b>   คริสตัล <b>{1}</b>",

@@ -257,6 +257,59 @@ namespace P2D.PlayMode.Tests
         }
 
         [UnityTest]
+        public IEnumerator SpireScreen_SweepAndChest()
+        {
+            var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
+            yield return null;
+            var save = menu.Save;
+            save.dragon.hatched = true;
+            save.story.cleared = StoryActions.TotalStages;
+            save.spire.highestFloor = 12;
+            save.spire.pendingChestFloor = 12;
+            menu.Show(ScreenId.Spire);
+            yield return null;
+
+            int torches = save.spire.torches;
+            long gold = save.wallet.gold;
+            RowButton("Floor 12", "SWEEP").onClick.Invoke();
+            yield return null;
+            Assert.AreEqual(torches - 1, save.spire.torches);
+            Assert.Greater(save.wallet.gold, gold);
+
+            int sigils = save.wallet.pactSigils;
+            FindButton("OPEN").onClick.Invoke();
+            yield return null;
+            Assert.AreEqual(0, save.spire.pendingChestFloor);
+            Assert.AreEqual(sigils + 2, save.wallet.pactSigils, "silver chest");
+            Assert.IsNull(FindButton("OPEN"));
+        }
+
+        [UnityTest]
+        public IEnumerator DragonScreen_PresetSaveAndUse()
+        {
+            var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
+            yield return null;
+            var save = menu.Save;
+            save.dragon.hatched = true;
+            save.story.cleared = StoryActions.TotalStages;
+            string claw = save.dragon.equipped[(int)EquipSlot.Claw];
+            menu.Show(ScreenId.Dragon);
+            yield return null;
+
+            RowButton("Set 1", "SAVE").onClick.Invoke();
+            yield return null;
+            var other = EquipmentGenerator.Create(new SeededRandom(1), Rarity.Rare, EquipSlot.Claw, GrowthPath.Arcane, "eq90010");
+            save.equipment.Add(other);
+            GameActions.Equip(save, other.uid);
+            menu.Redraw();
+            yield return null;
+
+            RowButton("Set 1", "USE").onClick.Invoke();
+            yield return null;
+            Assert.AreEqual(claw, save.dragon.equipped[(int)EquipSlot.Claw]);
+        }
+
+        [UnityTest]
         public IEnumerator HuntBattle_RoundTrip_ReturnsToHunt()
         {
             var menu = new GameObject("Main Menu").AddComponent<MainMenu>();

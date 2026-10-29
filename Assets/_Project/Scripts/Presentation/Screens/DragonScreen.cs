@@ -133,6 +133,8 @@ namespace P2D.Presentation.Screens
             string workshopHint = Loc.F("story {0}", StoryActions.Label(FeatureUnlocks.UnlockStage(Feature.Workshop)));
             string enhanceHint = Loc.F("story {0}", StoryActions.Label(FeatureUnlocks.UnlockStage(Feature.Enhance)));
             string workshopLabel = Loc.T("WORKSHOP");
+            if (workshop) Presets(save);
+
             Header(list, Loc.T("Equipped"));
             foreach (EquipSlot slot in Enum.GetValues(typeof(EquipSlot)))
             {
@@ -173,6 +175,25 @@ namespace P2D.Presentation.Screens
                 CellButton(row, Loc.T("EQUIP"), 0.67f, 0.83f, () => Menu.Commit(GameActions.Equip(save, uid), Loc.T("Item equipped")),
                     DragonRules.IsSlotUnlocked(item.slot, d.stage));
                 CellButton(row, Loc.T("SALVAGE"), 0.83f, 1, () => Menu.Commit(GameActions.Salvage(save, uid), Loc.T("Salvaged")), true, UiKit.Surface);
+            }
+        }
+
+        /// <summary>Three loadout presets: SAVE stores the current gear, skills and rider; USE switches to it.</summary>
+        void Presets(PlayerSave save)
+        {
+            Header(list, Loc.T("Loadout presets"));
+            for (int i = 0; i < PresetActions.Slots; i++)
+            {
+                int index = i;
+                var preset = i < save.presets.Count ? save.presets[i] : null;
+                bool empty = PresetActions.IsEmpty(preset);
+                int items = 0;
+                if (!empty) foreach (var uid in preset.equipped) if (save.FindEquipment(uid) != null) items++;
+                var row = UiKit.Row(list, 100, UiKit.Surface);
+                Cell(row, "<b>" + PresetActions.Name(save, i) + "</b>\n<color=#a3a8ba>"
+                    + (empty ? Loc.T("empty") : Loc.F("{0} items · rider {1}", items, Loc.Rider(preset.mainRiderId))) + "</color>", 0.02f, 0.6f, 26);
+                CellButton(row, Loc.T("SAVE"), 0.61f, 0.8f, () => Menu.Commit(PresetActions.Store(save, index)), true, UiKit.SurfaceAlt, 24);
+                CellButton(row, Loc.T("USE"), 0.8f, 1, () => Menu.Commit(PresetActions.Apply(save, index)), !empty, UiKit.Accent, 24);
             }
         }
 

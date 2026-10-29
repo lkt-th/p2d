@@ -22,7 +22,7 @@ weekly dungeon. The user writes in Thai — reply in Thai.
 | `P2D.Presentation` | `Scripts/Presentation` | `SafeAreaFitter`, `PortraitCanvasScaler`, `BattleRunner`. |
 | `P2D.Editor` | `Scripts/Editor` | Portrait player-settings hook, **P2D → Balance Simulator** window. |
 | `P2D.Domain.Tests` | `Tests/EditMode` | NUnit EditMode tests (140). |
-| `P2D.PlayMode.Tests` | `Tests/PlayMode` | PlayMode tests for the greybox scenes (10). |
+| `P2D.PlayMode.Tests` | `Tests/PlayMode` | PlayMode tests for the greybox scenes (11). |
 
 Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules`, `RiderCatalog`,
 `SkillCatalog`, `PathTraitRules`/`SkillLoadoutRules`, `LoadoutCalculator`, `BattleSimulation`
@@ -65,8 +65,9 @@ Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules
   - PlayMode tests use `SaveManager.StorageOverride = new MemorySaveStorage()` so they never touch the real save.
   - Screenshots for visual review: run the explicit PlayMode test `P2D.PlayMode.Tests.ScreenshotCapture`
     (`-testFilter`); PNGs go to `Logs/Screenshots` or `P2D_SCREENSHOT_DIR`. Look at them after UI changes.
-- UI text is English for now: the built-in legacy font may not render Thai. Thai needs a Thai font asset
-  (`docs/Unity-Tech.md` §8) before localization.
+- UI text is English for now, but the UI can render Thai: `UiKit.Font` loads Noto Sans Thai (Thai + Latin, OFL)
+  from `Art/Fonts/Resources`, falling back to `LegacyRuntime.ttf`. Legacy `Text` has no OpenType shaping: a tone mark
+  over an upper vowel (ที่, ปี่) and the vowel under ญ are dropped, so solve that before localizing (`docs/Unity-Tech.md` §8).
 - Starter kit (`GameActions.EnsureStarterKit`) sets the dragon to Lv 10 and gives 3 scales as a stand-in for
   story chapters 1–2 (a Lv 1 dragon loses spire floor 1).
 - Not built yet: real art/prefabs, IAP (packs, Dragon Pass), story mode, backend (UGS), cloud save, path visuals, URP (the greybox uses the built-in pipeline).

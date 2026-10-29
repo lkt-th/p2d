@@ -84,7 +84,7 @@ namespace P2D.Presentation.Battle
         public void Initialize(GreyboxBattleBootstrap owner)
         {
             bootstrap = owner;
-            font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            font = UiKit.Font;
             BuildWorld();
             BuildHud();
         }

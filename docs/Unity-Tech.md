@@ -453,6 +453,11 @@ public sealed class SafeAreaFitter : MonoBehaviour
 
 ภาษาไทยมีสระบน/ล่างและวรรณยุกต์ที่ต้องวางตำแหน่งตามบริบท (เช่น `ปี่` `ที่` `ญู`) — **TextMeshPro ไม่ได้ทำ OpenType shaping เต็มรูปแบบสำหรับภาษาไทย** จึงอาจเห็นวรรณยุกต์ซ้อนสระหรือชนหางพยัญชนะ
 
+**สถานะตอนนี้ (greybox, uGUI `Text`):** ฟอนต์ **Noto Sans Thai** (ไฟล์ variable จาก Google Fonts, SIL OFL — ไลเซนส์อยู่ข้างไฟล์ใน `NotoSansThai-OFL.txt`) อยู่ที่ `Assets/_Project/Art/Fonts/Resources/NotoSansThai.ttf` ฟอนต์นี้มีทั้งอักษรไทยและละติน (ASCII, `· — × …`) จึงใช้เป็นฟอนต์หลักฟอนต์เดียว
+- `UiKit.Font` โหลดด้วย `Resources.Load<Font>("NotoSansThai")` (ใช้ได้ทั้งใน editor และ player build) ถ้าไม่พบจะใช้ `LegacyRuntime.ttf` แทน — ทุก `Text` ที่สร้างผ่าน `UiKit.Label` และ HUD ของฉากต่อสู้ใช้ฟอนต์นี้
+- legacy `Text` ไม่มี OpenType shaping (GSUB/GPOS): ผลจาก screenshot (ต.ค. 2026) — คำทั่วไปเช่น `มังกรของฉัน` `ผู้` แสดงถูก แต่ **วรรณยุกต์ที่ต้องซ้อนบนสระบนหายไป** (`ที่`→`ที`, `ปี่`→`ปี`, `ขี่`→`ขี`) และ **สระล่างใต้ `ญ` หาย** (`ญู`→`ญ`) จึงยังใช้ localize จริงไม่ได้ ต้องเลือกทางตามข้อ 1–2 ด้านล่าง (ปรับตำแหน่งด้วย PUA หรือย้ายไป TMP/UI Toolkit ที่ shaping ได้)
+- ทดสอบ: `ThaiFontTests` (PlayMode) ตรวจว่า Label ที่มีข้อความไทยใช้ฟอนต์นี้ และดูภาพจริงผ่าน `ScreenshotCapture`
+
 แนวทาง (ต้องทดสอบตั้งแต่สัปดาห์แรกของ Prototype):
 1. ใช้ฟอนต์ไทยที่มี glyph ตำแหน่งสำรอง (เช่นชุด PUA แบบดั้งเดิม) ร่วมกับสคริปต์ปรับตำแหน่งสระ/วรรณยุกต์ก่อนส่งข้อความเข้า TMP (แนวทาง "Thai Font Adjuster" ที่ชุมชนนักพัฒนาไทยใช้กัน)
 2. หรือใช้ **UI Toolkit กับ Advanced Text Generator** ของ Unity 6 (ใช้ shaping engine ที่รองรับ complex script) สำหรับหน้าจอที่มีข้อความยาว — ตรวจสอบสถานะรองรับในเวอร์ชัน Unity ที่เลือกใช้ก่อนตัดสินใจ

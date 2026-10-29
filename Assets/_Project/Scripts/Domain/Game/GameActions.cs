@@ -413,7 +413,7 @@ namespace P2D.Domain
 
             reward.firstClear = true;
             MissionActions.Record(save, MissionEvent.SpireClear, 1);
-            reward.resources = SpireRules.FirstClearRewards(floor, save.spire.bracket);
+            reward.resources = FeaturedRiders.Boost(save, SpireRules.FirstClearRewards(floor, save.spire.bracket));
             var w = save.wallet;
             w.gold += reward.resources.gold;
             w.forgeStones += reward.resources.forgeStones;
@@ -424,6 +424,7 @@ namespace P2D.Domain
             if (floor == 10) w.refineStones += 3;
             if (floor == 20) { w.ancientScales += 1; w.refineStones += 5; }
             if (floor == SpireRules.TopFloor) { w.ancientScales += 2; w.pathEssence[random.Next(4)] += 10; }
+            SpireActions.CountClaim(save, floor); // the first clear is one of the week's three boss claims
 
             var rarity = EquipmentGenerator.RollSpireRarity(random, floor, save.spire.bracket);
             reward.gear = EquipmentGenerator.CreateRandom(random, rarity, save.dragon.stage, NewUid(save));

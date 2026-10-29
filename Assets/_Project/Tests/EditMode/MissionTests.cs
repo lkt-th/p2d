@@ -48,6 +48,17 @@ namespace P2D.Domain.Tests
         }
 
         [Test]
+        public void SpireSweep_CountsAsAFloor()
+        {
+            var save = NewGame();
+            GameActions.EnsureStarterKit(save, new SeededRandom(1));
+            save.spire.highestFloor = 5;
+            Assert.IsTrue(SpireActions.Sweep(save, 3, Element.Fire, new SeededRandom(1)).ok);
+            Assert.AreEqual(1, MissionActions.Progress(save, Mission("d_spire"), Now));
+            Assert.AreEqual(1, MissionActions.Progress(save, Mission("w_spire"), Now));
+        }
+
+        [Test]
         public void DailyResets_AtTheDailyReset_WeeklyKeeps()
         {
             var save = NewGame();

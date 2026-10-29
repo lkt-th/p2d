@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using P2D.Domain;
 using P2D.Presentation.UI;
+using P2D.Services;
 using UnityEngine;
 
 namespace P2D.Presentation.Screens
@@ -25,6 +26,17 @@ namespace P2D.Presentation.Screens
                 + "\n" + Loc.T("Rates  R 60% · SR 32% · SSR 7% · UR 1%   ·   10 pulls guarantee SR+")
                 + "\n" + Loc.F("SSR+ within {0} · UR within {1}", SummonRules.SsrPity - pity.sinceSsr, SummonRules.UrHardPity - pity.sinceUr)
                 + (pity.featuredGuaranteed ? " · " + Loc.T("next UR is featured") : ""), 0.02f, 1, 28);
+
+            var now = ServerClock.UtcNow;
+            var free = UiKit.Row(list, 100, UiKit.Surface);
+            bool freeReady = FreeSummon.IsAvailable(save, now);
+            Cell(free, freeReady ? Loc.T("A free pull is waiting today")
+                : Loc.F("Next free pull in {0}", Fmt.Duration(FreeSummon.NextFreeUtc(now) - now)), 0.02f, 0.68f, 28);
+            CellButton(free, Loc.T("FREE x1"), 0.7f, 1, () =>
+            {
+                last = FreeSummon.Pull(Save, ServerClock.UtcNow, Menu.Random);
+                Menu.Commit(last.Count > 0 ? ActionResult.Ok(Loc.T("Free pull used")) : ActionResult.Fail(Loc.T("Come back tomorrow for the next free pull")));
+            }, freeReady, freeReady ? UiKit.Accent : UiKit.SurfaceAlt);
 
             var buttons = UiKit.Row(list, 140);
             CellButton(buttons, Loc.T("SUMMON x1") + "\n" + Loc.T("1 sigil"), 0, 0.5f, () => Pull(1), save.wallet.pactSigils >= 1);

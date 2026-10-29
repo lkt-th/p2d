@@ -14,6 +14,9 @@ namespace P2D.Domain
 
         /// <summary>True after losing a rate-up 50/50: the next UR is the featured rider.</summary>
         public bool featuredGuaranteed;
+
+        /// <summary>Server day of the last free daily pull (GDD §2 daily loop); 0 = never.</summary>
+        public int freeSummonDay;
     }
 
     public struct SummonResult

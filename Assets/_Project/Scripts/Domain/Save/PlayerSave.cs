@@ -61,6 +61,9 @@ namespace P2D.Domain
 
         /// <summary>Weekly chest earned at the last reset and not yet opened (0 = none).</summary>
         public int pendingChestFloor;
+
+        /// <summary>Floors skipped by this week's catch-up start whose first-clear materials are not claimed yet (0 = none).</summary>
+        public int catchUpFloors;
     }
 
     [Serializable]

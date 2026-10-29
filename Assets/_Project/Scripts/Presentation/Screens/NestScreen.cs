@@ -19,12 +19,12 @@ namespace P2D.Presentation.Screens
             var loadout = GameActions.ToLoadout(Save);
             double power = LoadoutCalculator.Compute(loadout).PowerScore();
 
-            // Name on top, dragon placeholder in the middle band, stage/power underneath — no overlap.
+            // Name on top, the dragon (stage + dominant path look) in the middle band, stage/power underneath — no overlap.
             var hero = UiKit.Row(list, 420, UiKit.Surface);
             var name = UiKit.Rect(hero, "Name", new Vector2(0, 0.80f), Vector2.one, Vector2.zero, Vector2.zero);
             UiKit.Label(name, d.name, 56, TextAnchor.MiddleCenter);
-            var art = UiKit.Rect(hero, "Dragon", new Vector2(0.36f, 0.30f), new Vector2(0.64f, 0.78f), Vector2.zero, Vector2.zero);
-            art.gameObject.AddComponent<UnityEngine.UI.Image>().color = new Color(0.3f, 0.55f, 0.9f);
+            var art = UiKit.Rect(hero, "Dragon", new Vector2(0.3f, 0.28f), new Vector2(0.7f, 0.80f), Vector2.zero, Vector2.zero);
+            DragonPortrait.Build(art, P2D.Presentation.Battle.DragonLook.For(Save));
             var info = UiKit.Rect(hero, "Info", Vector2.zero, new Vector2(1, 0.28f), Vector2.zero, Vector2.zero);
             UiKit.Label(info, StageName(d.stage) + "  ·  " + Loc.F("Lv {0} / {1}", d.level, DragonRules.LevelCap(d.stage))
                 + "\n" + Loc.F("Power {0}", power.ToString("N0")), 32, TextAnchor.MiddleCenter);

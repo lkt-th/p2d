@@ -72,7 +72,7 @@ Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules
 - A new game opens on `HatchScreen` (tap the egg, name the dragon; bars hidden until `dragon.hatched`). Save format v2 added `hatched`; the v1 → v2 step marks older saves as hatched.
 - Starter kit (`GameActions.EnsureStarterKit`) sets the dragon to Lv 10 and gives 3 scales as a stand-in for
   story chapters 1–2 (a Lv 1 dragon loses spire floor 1).
-- Not built yet: real art/prefabs, IAP (packs, Dragon Pass), backend (UGS), cloud save, path visuals, URP (the greybox uses the built-in pipeline).
+- Not built yet: real art/prefabs, IAP (packs, Dragon Pass), backend (UGS), cloud save, URP (the greybox uses the built-in pipeline).
 
 ## Open decisions (ask the user)
 

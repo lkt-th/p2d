@@ -45,7 +45,7 @@ namespace P2D.Presentation.Battle
         Transform world;
         Transform enemyRoot;
         Transform dragon;
-        Renderer dragonBody;
+        DragonFigure dragonFigure;
         Color dragonColor;
         Transform targetRing;
         Renderer warningDisc;
@@ -105,6 +105,9 @@ namespace P2D.Presentation.Battle
             continueButton.gameObject.SetActive(true);
         }
 
+        /// <summary>How the dragon looks in the next <see cref="Bind"/> (stage + dominant path); visual only.</summary>
+        public DragonLook Look { get; set; }
+
         public void Bind(BattleRunner battleRunner, BattleSetup battleSetup) =>
             Bind(battleRunner, battleSetup, Loc.F("Floor {0}", bootstrap.Floor) + "  ·  " + bootstrap.CurrentBuild.name);
 
@@ -120,8 +123,9 @@ namespace P2D.Presentation.Battle
             runner.EventRaised += OnBattleEvent;
             runner.Finished += OnFinished;
 
-            dragonColor = ElementColor(setup.dragonElement);
-            dragonBody.material.color = dragonColor;
+            if (dragonFigure != null) dragonFigure.Destroy();
+            dragonFigure = DragonFigure.Build(dragon, Look ?? DragonLook.Plain(1), baseMaterial, true);
+            dragonColor = dragonFigure.Look.body;
             BuildEnemies();
             BuildSkillButtons();
             titleText.text = title;
@@ -163,14 +167,7 @@ namespace P2D.Presentation.Battle
             dragon = new GameObject("Dragon").transform;
             dragon.SetParent(world);
             dragon.position = new Vector3(0, 0, -2.6f);
-            dragonBody = Primitive(PrimitiveType.Capsule, dragon, "Body", new Vector3(0, 0.8f, 0), new Vector3(1.2f, 0.9f, 1.2f), Color.white);
-            dragonBody.transform.localRotation = Quaternion.Euler(90, 0, 0);
-            Primitive(PrimitiveType.Sphere, dragon, "Head", new Vector3(0, 1.3f, 1.1f), Vector3.one * 0.7f, new Color(0.25f, 0.45f, 0.75f));
-            var wingL = Primitive(PrimitiveType.Cube, dragon, "Wing L", new Vector3(-1.2f, 1.2f, 0), new Vector3(1.6f, 0.08f, 0.9f), new Color(0.2f, 0.3f, 0.5f));
-            wingL.transform.localRotation = Quaternion.Euler(0, 0, 20);
-            var wingR = Primitive(PrimitiveType.Cube, dragon, "Wing R", new Vector3(1.2f, 1.2f, 0), new Vector3(1.6f, 0.08f, 0.9f), new Color(0.2f, 0.3f, 0.5f));
-            wingR.transform.localRotation = Quaternion.Euler(0, 0, -20);
-            Primitive(PrimitiveType.Cube, dragon, "Rider", new Vector3(0, 1.6f, -0.1f), new Vector3(0.35f, 0.5f, 0.35f), new Color(0.85f, 0.75f, 0.5f));
+            // The dragon's parts come from DragonLook (stage + dominant path) and are built in Bind.
 
             warningDisc = Primitive(PrimitiveType.Cylinder, world, "Telegraph", new Vector3(0, 0.02f, -2.6f), new Vector3(3.2f, 0.01f, 3.2f), new Color(0.9f, 0.1f, 0.1f));
             warningDisc.gameObject.SetActive(false);
@@ -424,7 +421,8 @@ namespace P2D.Presentation.Battle
         {
             dragonFlash = Mathf.MoveTowards(dragonFlash, 0, Time.deltaTime * 5f);
             dragonLunge = Mathf.MoveTowards(dragonLunge, 0, Time.deltaTime * 6f);
-            dragonBody.material.color = Color.Lerp(dragonColor, Color.white, dragonFlash);
+            dragonFigure.Body.material.color = Color.Lerp(dragonColor, Color.white, dragonFlash);
+            dragonFigure.Animate(Time.time);
             dragon.position = new Vector3(Mathf.Sin(Time.time * 40f) * dragonFlash * 0.1f, 0, -2.6f + dragonLunge * 0.6f);
 
             bool telegraph = sim.IsTelegraphActive;

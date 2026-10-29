@@ -431,6 +431,9 @@ public sealed class SafeAreaFitter : MonoBehaviour
 | ผู้ใช้บนหลัง | Socket "Saddle" + ท่านั่งร่วมกัน สลับเฉพาะ mesh ผู้ใช้ |
 | โหลด | Addressables group ต่อ Stage — โหลดเฉพาะ Stage ปัจจุบัน + ถัดไป (สำหรับคัตซีนวิวัฒนาการ) |
 
+**สถานะตอนนี้ (greybox):** `Presentation/Battle/DragonLook` แปลง Stage + Dominant Path (affinity สูงสุดจาก `LoadoutCalculator.Affinity`) + Tier เป็นสีและสัดส่วน — ขนาดโตตาม Stage (×1.0 → ×1.88), Fury แดง/ส้ม เล็บและเขาใหญ่, Bastion สีทราย/หิน ตัวหนา มีแผ่นเกราะบนหลัง, Tempest เขียวอมฟ้า ปีกยาว, Arcane ม่วง มีลูกแก้วเรืองแสง; Tier II เพิ่มหงอนสีเน้น, Tier III+ ชิ้นสีเน้นเรืองแสง (emission); เขา/ปีก/หาง โผล่เมื่อช่องนั้นปลดล็อกตาม Stage (2/3/4); ยังไม่มี affinity = มังกรสีฟ้าเรียบ ๆ
+`DragonFigure` สร้างร่างจาก primitive 3D ในฉากต่อสู้ (กระพือปีก/ลูกแก้วลอย, อ่านอย่างเดียว ไม่ป้อนกลับเข้า `BattleSimulation`), `UI/DragonPortrait` วาดภาพหน้าตรงด้วย `Image` ของ uGUI (วงกลมสร้างในโค้ด ไม่มีกล้อง/RenderTexture จึงเสถียรใน batch mode) ใช้บนการ์ดมังกรหน้ารัง และ `Screens/EvolutionCutscene` (6 วินาที กดข้ามได้, canvas ของตัวเอง sortingOrder 50): ร่างเดิมเรืองแสงและพองขึ้น → แฟลช → ร่างใหม่โตขึ้นพร้อมชื่อ Stage และช่องอุปกรณ์ที่ปลดล็อก เปิดจากปุ่ม EVOLVE ใน `DragonScreen`
+
 ---
 
 ## 7. Backend และการกันโกง

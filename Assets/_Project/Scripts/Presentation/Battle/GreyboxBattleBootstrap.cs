@@ -60,6 +60,8 @@ namespace P2D.Presentation.Battle
             // Campaign battle from the menu: play the given setup once, then report and go back.
             request.setup.auto = false;
             runner.Begin(request.setup);
+            var save = SaveManager.Instance != null ? SaveManager.Instance.Current : null;
+            view.Look = save != null ? DragonLook.For(save) : null;
             view.Bind(runner, request.setup, request.title);
             view.SetCampaignMode(() => FinishCampaign(request, runner.Simulation.Outcome), () => FinishCampaign(request, BattleOutcome.Defeat));
         }
@@ -79,6 +81,7 @@ namespace P2D.Presentation.Battle
             var setup = BuildFactory.ToBattle(CurrentBuild, enemies, seed, SpireEnemyFactory.TimeLimit(floor, tuning));
             setup.auto = false;
             runner.Begin(setup);
+            view.Look = DragonLook.For(BuildFactory.ToLoadout(CurrentBuild));
             view.Bind(runner, setup);
         }
 

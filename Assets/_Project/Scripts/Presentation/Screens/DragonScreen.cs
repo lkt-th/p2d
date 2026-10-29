@@ -125,7 +125,7 @@ namespace P2D.Presentation.Screens
             string evolveText = d.stage < DragonRules.MaxStage
                 ? Loc.T("EVOLVE") + "\n" + Loc.F("({0} scales)", DragonRules.EvolveCostFrom(d.stage).ancientScales)
                 : Loc.T("MAX STAGE");
-            CellButton(grow, evolveText, 0.5f, 1, () => Menu.Commit(GameActions.Evolve(save)),
+            CellButton(grow, evolveText, 0.5f, 1, () => { int from = d.stage; var r = GameActions.Evolve(save); Menu.Commit(r); if (r.ok) EvolutionCutscene.Play(Menu, from, save.dragon.stage); },
                 DragonRules.CanEvolve(d.level, d.stage));
 
             bool enhance = FeatureUnlocks.IsUnlocked(save, Feature.Enhance);

@@ -58,9 +58,38 @@ namespace P2D.Presentation.Screens
                     + (offline.weekRolledOver ? "\nA new spire week began (chest from floor " + offline.weeklyChestFloor + ")" : ""), 0.02f, 1);
             }
 
-            Header(list, "Nest");
-            Cell(UiKit.Row(list, 80, UiKit.Surface), "Idle income is not in yet (numbers TBD in Balance.md).", 0.02f, 1, 28,
-                TextAnchor.MiddleLeft, UiKit.Muted);
+            NestIncomeRows(now);
+        }
+
+        void NestIncomeRows(System.DateTime now)
+        {
+            var save = Save;
+            var income = NestActions.Pending(save, now);
+            int level = save.nest.level;
+            Header(list, "Nest  ·  Lv " + level + " / " + NestActions.LevelCap(save.dragon.stage));
+
+            var stored = UiKit.Row(list, 150, UiKit.Surface);
+            Cell(stored, "Stored: <b>" + Fmt.Num(income.gold) + "</b> gold, <b>" + income.essence + "</b> essence"
+                + "\n<color=#9AA3B5>" + income.hours.ToString("0.0") + " / " + NestActions.CapHours + " h"
+                + (income.full ? "  ·  FULL, collect to keep earning" : "") + "</color>", 0.02f, 0.7f, 28);
+            bool any = income.gold > 0 || income.essence > 0;
+            CellButton(stored, "COLLECT", 0.72f, 1, () => Menu.Commit(NestActions.Collect(save, ServerClock.UtcNow)),
+                any, any ? UiKit.Accent : UiKit.SurfaceAlt);
+
+            var upgrade = UiKit.Row(list, 150, UiKit.Surface);
+            int cap = NestActions.LevelCap(save.dragon.stage);
+            string rate = Fmt.Num(NestActions.GoldPerHour(level)) + " gold, " + NestActions.EssencePerHour(level).ToString("0.#") + " essence / h";
+            if (level >= cap)
+            {
+                Cell(upgrade, rate + "\n<color=#9AA3B5>" + (level >= NestActions.MaxLevel ? "Max level" : "Evolve the dragon to raise the cap")
+                    + "</color>", 0.02f, 1, 28);
+                return;
+            }
+            long cost = NestActions.UpgradeCost(level);
+            Cell(upgrade, rate + "\n<color=#9AA3B5>Lv " + (level + 1) + ": " + Fmt.Num(NestActions.GoldPerHour(level + 1)) + " gold, "
+                + NestActions.EssencePerHour(level + 1).ToString("0.#") + " essence / h</color>", 0.02f, 0.7f, 28);
+            CellButton(upgrade, "UPGRADE\n" + Fmt.Num(cost), 0.72f, 1, () => Menu.Commit(NestActions.Upgrade(save, ServerClock.UtcNow)),
+                save.wallet.gold >= cost);
         }
 
         string NextGoal()

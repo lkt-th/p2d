@@ -149,6 +149,31 @@ namespace P2D.PlayMode.Tests
         }
 
         [UnityTest]
+        public IEnumerator NestScreen_CollectAndUpgrade()
+        {
+            var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
+            yield return null;
+            var save = menu.Save;
+            save.nest.lastCollectUtcTicks = ServerClock.UtcNow.AddHours(-3).Ticks;
+            save.wallet.gold = 0;
+            menu.Show(ScreenId.Nest);
+            yield return null;
+
+            FindButton("COLLECT").onClick.Invoke();
+            yield return null;
+            Assert.GreaterOrEqual(save.wallet.gold, 3 * NestActions.GoldPerHour(1));
+            Assert.Less(save.wallet.gold, 4 * NestActions.GoldPerHour(1));
+
+            save.wallet.gold = NestActions.UpgradeCost(1);
+            menu.Redraw();
+            yield return null;
+            FindButton("UPGRADE").onClick.Invoke();
+            yield return null;
+            Assert.AreEqual(2, save.nest.level);
+            Assert.IsNull(FindButton("UPGRADE"), "stage 1 caps the nest at Lv 2");
+        }
+
+        [UnityTest]
         public IEnumerator HuntBattle_RoundTrip_ReturnsToHunt()
         {
             var menu = new GameObject("Main Menu").AddComponent<MainMenu>();

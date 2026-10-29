@@ -118,6 +118,7 @@ namespace P2D.Domain
         public static HuntRun ApplyResult(PlayerSave save, int zone, EncounterKind kind, BattleOutcome outcome, IRandom random)
         {
             var run = new HuntRun { kind = kind, outcome = outcome };
+            MissionActions.Record(save, MissionEvent.Hunt, 1);
             bool won = outcome == BattleOutcome.Victory;
             if (!won && kind == EncounterKind.Normal) return run;
 

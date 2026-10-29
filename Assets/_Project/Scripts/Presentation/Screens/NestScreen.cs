@@ -35,6 +35,7 @@ namespace P2D.Presentation.Screens
             Cell(riderRow, Loc.F("Riding: <b>{0}</b>", Loc.Rider(d.mainRiderId)) + "  " + (riderProfile != null ? riderProfile.rank.ToString() : "")
                 + "  " + (rider != null ? Fmt.Stars(rider.star) : ""), 0.02f, 0.7f);
             CellButton(riderRow, Loc.T("RIDERS"), 0.72f, 1, () => Menu.Show(ScreenId.Riders), FeatureUnlocks.IsUnlocked(Save, Feature.Riders));
+            MissionsRow();
 
             var now = ServerClock.UtcNow;
             var theme = SpireThemes.ForTime(now);
@@ -104,6 +105,16 @@ namespace P2D.Presentation.Screens
         }
 
         /// <summary>ไทย | English. Each label is in its own language so either can be found.</summary>
+        void MissionsRow()
+        {
+            var row = UiKit.Row(list, 90, UiKit.Surface);
+            bool open = FeatureUnlocks.IsUnlocked(Save, Feature.Missions);
+            int ready = open ? MissionActions.Claimable(Save, ServerClock.UtcNow) : 0;
+            Cell(row, Loc.T("Daily & weekly missions") + (ready > 0 ? "  <color=#e9c46a>" + Loc.F("{0} to claim", ready) + "</color>" : ""), 0.02f, 0.7f);
+            CellButton(row, open ? Loc.T("MISSIONS") : Loc.T("LOCKED") + "\n" + StoryActions.Label(FeatureUnlocks.UnlockStage(Feature.Missions)), 0.72f, 1,
+                () => Menu.Show(ScreenId.Missions), open, ready > 0 ? UiKit.Accent : UiKit.SurfaceAlt);
+        }
+
         void LanguageRow()
         {
             Header(list, Loc.T("Language"));

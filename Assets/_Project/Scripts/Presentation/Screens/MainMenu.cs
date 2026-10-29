@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace P2D.Presentation.Screens
 {
-    public enum ScreenId { Nest, Dragon, Riders, Spire, Summon, Hunt, Shop, Story, Hatch }
+    public enum ScreenId { Nest, Dragon, Riders, Spire, Summon, Hunt, Shop, Story, Hatch, Missions }
 
     /// <summary>
     /// The menu scene: loads the save, builds the portrait shell (resource bar, content area,
@@ -68,6 +68,7 @@ namespace P2D.Presentation.Screens
             AddScreen(ScreenId.Shop, new ShopScreen());
             AddScreen(ScreenId.Story, new StoryScreen());
             AddScreen(ScreenId.Hatch, new HatchScreen());
+            AddScreen(ScreenId.Missions, new MissionsScreen());
 
             bool returningFromBattle = !string.IsNullOrEmpty(BattleHandoff.LastMessage);
             Show(!Save.dragon.hatched ? ScreenId.Hatch : returningFromBattle ? returnScreen : ScreenId.Nest);
@@ -103,6 +104,7 @@ namespace P2D.Presentation.Screens
                 case ScreenId.Hunt:
                 case ScreenId.Spire: return ScreenId.Story;
                 case ScreenId.Summon: return ScreenId.Riders;
+                case ScreenId.Missions: return ScreenId.Nest;
                 default: return id;
             }
         }
@@ -294,6 +296,7 @@ namespace P2D.Presentation.Screens
         {
             var save = Save;
             if (save == null || resourceText == null) return;
+            MissionActions.Sync(save, ServerClock.UtcNow); // events from actions without a clock (battles, enhance) land in today
             var w = save.wallet;
             resourceText.text = Loc.F("Gold {0}   Gems {1}   Essence {2}   Forge {3}   Sigils {4}   Scales {5}", Fmt.Num(w.gold),
                 Fmt.Num(w.crystals), w.dragonEssence, w.forgeStones, w.pactSigils, w.ancientScales);

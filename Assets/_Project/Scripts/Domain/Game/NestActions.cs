@@ -72,6 +72,7 @@ namespace P2D.Domain
             save.wallet.gold += income.gold;
             save.wallet.dragonEssence += income.essence;
             save.nest.lastCollectUtcTicks = utcNow.Ticks;
+            MissionActions.Record(save, MissionEvent.NestCollect, 1, utcNow);
             return ActionResult.Ok(Loc.F("+{0} gold, +{1} essence", income.gold, income.essence));
         }
 

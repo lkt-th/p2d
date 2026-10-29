@@ -70,6 +70,7 @@ namespace P2D.Domain
             if (save.spire.torches <= 0) { result.message = Loc.T("No soul torches left (3 more tomorrow)"); return result; }
 
             save.spire.torches--;
+            MissionActions.Record(save, MissionEvent.SpireClear, 1); // a sweep counts as a spire floor for missions
             var full = FeaturedRiders.Boost(save, SpireRules.FirstClearRewards(floor, save.spire.bracket));
             result.resources = new FloorRewards
             {

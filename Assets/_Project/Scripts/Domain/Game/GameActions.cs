@@ -172,6 +172,7 @@ namespace P2D.Domain
             item.enhance++;
             if (EquipmentRules.IsMilestone(item.enhance)) EquipmentGenerator.ApplyMilestone(random, item);
             AutoSkillsIfInvalid(save);
+            MissionActions.Record(save, MissionEvent.Enhance, 1);
             return ActionResult.Ok("+" + item.enhance);
         }
 
@@ -267,6 +268,7 @@ namespace P2D.Domain
             }
             if (fed == 0) return ActionResult.Fail(Loc.T("Need dragon essence and gold"));
             if (d.level >= cap) d.exp = 0;
+            MissionActions.Record(save, MissionEvent.Feed, 1);
             return ActionResult.Ok(Loc.F("Lv {0}", d.level));
         }
 
@@ -345,6 +347,7 @@ namespace P2D.Domain
             if (!FeatureUnlocks.IsUnlocked(save, Feature.Riders)) return results;
             if (save.wallet.pactSigils < count) return results;
             save.wallet.pactSigils -= count;
+            MissionActions.Record(save, MissionEvent.Summon, count);
 
             var pulls = count == 10
                 ? SummonRules.PullTen(random, save.summonPity)
@@ -409,6 +412,7 @@ namespace P2D.Domain
             if (outcome != BattleOutcome.Victory || floor != NextSpireFloor(save) || !FeatureUnlocks.IsUnlocked(save, Feature.Spire)) return reward;
 
             reward.firstClear = true;
+            MissionActions.Record(save, MissionEvent.SpireClear, 1);
             reward.resources = FeaturedRiders.Boost(save, SpireRules.FirstClearRewards(floor, save.spire.bracket));
             var w = save.wallet;
             w.gold += reward.resources.gold;

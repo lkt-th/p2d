@@ -18,9 +18,24 @@ namespace P2D.Presentation.UI
         public static readonly Color Good = new Color(0.42f, 0.76f, 0.48f);
         public static readonly Color Bad = new Color(0.9f, 0.33f, 0.29f);
 
+        /// <summary>Resources path of the UI font (Noto Sans Thai: Thai + Latin, SIL OFL).</summary>
+        public const string ThaiFontResource = "NotoSansThai";
+
         static Font font;
 
-        public static Font Font => font != null ? font : (font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf"));
+        /// <summary>
+        /// The font for every UI <see cref="Text"/>: Noto Sans Thai from Resources (so it ships in
+        /// player builds), or the built-in legacy font if that asset is missing.
+        /// </summary>
+        public static Font Font
+        {
+            get
+            {
+                if (font == null) font = Resources.Load<Font>(ThaiFontResource);
+                if (font == null) font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                return font;
+            }
+        }
 
         public static RectTransform Rect(Transform parent, string name, Vector2 anchorMin, Vector2 anchorMax, Vector2 offsetMin, Vector2 offsetMax)
         {
@@ -57,6 +72,7 @@ namespace P2D.Presentation.UI
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
             t.verticalOverflow = VerticalWrapMode.Overflow;
             t.raycastTarget = false;
+            rt.gameObject.AddComponent<ThaiMarkPositioner>();
             return t;
         }
 

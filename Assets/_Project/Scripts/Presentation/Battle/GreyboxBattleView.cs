@@ -84,7 +84,7 @@ namespace P2D.Presentation.Battle
         public void Initialize(GreyboxBattleBootstrap owner)
         {
             bootstrap = owner;
-            font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            font = UiKit.Font;
             BuildWorld();
             BuildHud();
         }
@@ -582,6 +582,7 @@ namespace P2D.Presentation.Battle
             t.horizontalOverflow = HorizontalWrapMode.Overflow;
             t.verticalOverflow = VerticalWrapMode.Overflow;
             t.raycastTarget = false;
+            rt.gameObject.AddComponent<ThaiMarkPositioner>();
             return t;
         }
 

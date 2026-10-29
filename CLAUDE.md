@@ -22,7 +22,7 @@ weekly dungeon. The user writes in Thai — reply in Thai.
 | `P2D.Presentation` | `Scripts/Presentation` | `SafeAreaFitter`, `PortraitCanvasScaler`, `BattleRunner`. |
 | `P2D.Editor` | `Scripts/Editor` | Portrait player-settings hook, **P2D → Balance Simulator** window. |
 | `P2D.Domain.Tests` | `Tests/EditMode` | NUnit EditMode tests (156). |
-| `P2D.PlayMode.Tests` | `Tests/PlayMode` | PlayMode tests for the greybox scenes (12). |
+| `P2D.PlayMode.Tests` | `Tests/PlayMode` | PlayMode tests for the greybox scenes (18). |
 
 Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules`, `RiderCatalog`,
 `SkillCatalog`, `PathTraitRules`/`SkillLoadoutRules`, `LoadoutCalculator`, `BattleSimulation`
@@ -65,8 +65,10 @@ Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules
   - PlayMode tests use `SaveManager.StorageOverride = new MemorySaveStorage()` so they never touch the real save.
   - Screenshots for visual review: run the explicit PlayMode test `P2D.PlayMode.Tests.ScreenshotCapture`
     (`-testFilter`); PNGs go to `Logs/Screenshots` or `P2D_SCREENSHOT_DIR`. Look at them after UI changes.
-- UI text is English for now: the built-in legacy font may not render Thai. Thai needs a Thai font asset
-  (`docs/Unity-Tech.md` §8) before localization.
+- UI text is English for now, but the UI can render Thai: `UiKit.Font` loads Noto Sans Thai (Thai + Latin, OFL)
+  from `Art/Fonts/Resources`, falling back to `LegacyRuntime.ttf`. Legacy `Text` has no OpenType shaping, so every
+  label gets `ThaiMarkPositioner`, which moves stacked tone marks and lower vowels into place (`docs/Unity-Tech.md` §8).
+  Build new text through `UiKit.Label` (or add that component) so Thai stays readable.
 - A new game opens on `HatchScreen` (tap the egg, name the dragon; bars hidden until `dragon.hatched`). Save format v2 added `hatched`; the v1 → v2 step marks older saves as hatched.
 - Starter kit (`GameActions.EnsureStarterKit`) sets the dragon to Lv 10 and gives 3 scales as a stand-in for
   story chapters 1–2 (a Lv 1 dragon loses spire floor 1).

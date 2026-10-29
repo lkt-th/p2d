@@ -70,7 +70,10 @@ namespace P2D.Presentation.Screens
             var preview = UiKit.Row(list, 210, UiKit.Surface);
             var e = enemies[0];
             Cell(preview, enemies.Count + " × " + Loc.T(e.id) + "  " + Loc.F("Lv {0}", e.level) + "   HP " + e.hp.ToString("N0") + "   ATK " + e.attack.ToString("N0")
-                + (e.heavyIntervalSeconds > 0 ? "\n" + Loc.F("Telegraphed heavy attack every {0} s — swipe to dodge", e.heavyIntervalSeconds) : "")
+                + (e.heavyIntervalSeconds > 0 ? "\n" + (e.heavyUndodgeable
+                    ? Loc.F("Undodgeable wave every {0} s — shields and DEF help", e.heavyIntervalSeconds)
+                    : Loc.F("Telegraphed heavy attack every {0} s — swipe to dodge", e.heavyIntervalSeconds)) : "")
+                + (e.skillArmor > 0 ? "\n" + Loc.F("Crystal armour ({0}% of HP): only skills break it", (e.skillArmor * 100).ToString("0")) : "")
                 + (e.enrageSeconds > 0 ? "\n" + Loc.F("Enrages at {0} s", e.enrageSeconds) : "")
                 + "\n" + Loc.F("Your power {0}", power.ToString("N0")), 0.02f, 1, 28);
 

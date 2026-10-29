@@ -21,7 +21,7 @@ weekly dungeon. The user writes in Thai — reply in Thai.
 | `P2D.Services` | `Scripts/Services` | Unity glue: `SaveManager`, `FileSaveStorage`, `JsonUtilitySaveSerializer`, `ServerClock`. |
 | `P2D.Presentation` | `Scripts/Presentation` | `SafeAreaFitter`, `PortraitCanvasScaler`, `BattleRunner`. |
 | `P2D.Editor` | `Scripts/Editor` | Portrait player-settings hook, **P2D → Balance Simulator** window. |
-| `P2D.Domain.Tests` | `Tests/EditMode` | NUnit EditMode tests (191). |
+| `P2D.Domain.Tests` | `Tests/EditMode` | NUnit EditMode tests (194). |
 | `P2D.PlayMode.Tests` | `Tests/PlayMode` | PlayMode tests for the greybox scenes (30). |
 
 Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules`, `RiderCatalog`,
@@ -29,7 +29,7 @@ Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules
 (deterministic, 30 ticks/s, seed + input log replays exactly), `SpireRules`/`WeeklyCalendar`,
 `HuntRules`, `SummonRules`, `PlayerSave`/`SaveService`/`OfflineProgress`, `BalanceSimulator`,
 `GameActions` (every menu action: hatch, equip, support riders, enhance, reforge, refine, salvage, feed, evolve, ride, star up, summon, spire battle/result),
-`EquipmentGenerator`, `SetCatalog` (2/4-piece sets), `SpireThemes`, `SpireActions` (sweep, boss claims, weekly chest, catch-up rewards), `PresetActions` (3 loadout presets), `FreeSummon` (one free pull a day), `FeaturedRiders` (weekly +20% spire materials), `SpireAffixes` (weekly affixes, on since round 8; tests that need an affix-free spire battle set `Live = false` and restore it), `HuntActions` (zones, runs, auto hunt), `ShopActions` (shard shop, stamina refill), `NestActions` (idle income, nest level), `StoryActions` (3 chapters × 10 stages, first-clear rewards), `StoryScript` (scenes before key stages), `MissionActions` (daily / weekly missions; actions without a clock record into `pending`, `Sync` folds it into today), `FeatureUnlocks` (story stage gates for missions / enhance / riders / hunt / spire / workshop; Domain refuses locked actions, test helpers set `story.cleared = StoryActions.TotalStages`).
+`EquipmentGenerator`, `SetCatalog` (2/4-piece sets), `SpireThemes` (+ theme boss mechanics in `SpireEnemyFactory.ApplyThemeMechanic`: water wave, wind lightning, earth crystal armour), `SpireActions` (sweep, boss claims, weekly chest, catch-up rewards), `PresetActions` (3 loadout presets), `FreeSummon` (one free pull a day), `FeaturedRiders` (weekly +20% spire materials), `SpireAffixes` (weekly affixes, on since round 8; tests that need an affix-free spire battle set `Live = false` and restore it), `HuntActions` (zones, runs, auto hunt), `ShopActions` (shard shop, stamina refill), `NestActions` (idle income, nest level), `StoryActions` (3 chapters × 10 stages, first-clear rewards), `StoryScript` (scenes before key stages), `MissionActions` (daily / weekly missions; actions without a clock record into `pending`, `Sync` folds it into today), `FeatureUnlocks` (story stage gates for missions / enhance / riders / hunt / spire / workshop; Domain refuses locked actions, test helpers set `story.cleared = StoryActions.TotalStages`).
 
 ## Conventions
 
@@ -76,7 +76,7 @@ Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules
 
 ## Open decisions (ask the user)
 
-- Balance watch items: Arcane still clears fastest; Bastion boss fights take 80–107 s of a 120 s limit;
+- Balance watch items: Arcane still clears fastest; Bastion boss fights take 80–107 s of a 120 s limit (and lose the earth Golem boss on time at B4: 3%);
   Magma 4-piece (40% burst, 1 s cooldown) still leads the set builds on Tempest (75% auto boss wins vs Storm 54%); see balance-report.md.
 - Weekly spire affixes are on (round 8: theme ATK +10%, Thick hide DEF +15%, Mist crit −5, Rush 75 s). Mist weeks still drop the B2 Fury boss to 12–19%; watch playtests (balance-report.md "Affix").
 - PvP or not; always-online or partly offline.

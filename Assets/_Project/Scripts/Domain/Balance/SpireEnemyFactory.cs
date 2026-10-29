@@ -24,6 +24,17 @@ namespace P2D.Domain
         public double bossEnrageSeconds = 90;
         public double floorTimeLimit = 90;
         public double bossTimeLimit = 120;
+
+        // Theme boss mechanics (GDD §6.2, Balance §5.10). Fire's Ignar keeps the base boss (enrage).
+        /// <summary>Hydroscale (water): an undodgeable wave instead of the telegraphed heavy.</summary>
+        public double waveEvery = 20;
+        public double waveMultiplier = 1.5;
+        /// <summary>Voltra (wind): frequent lightning that must be dodged.</summary>
+        public double lightningEvery = 4;
+        public double lightningMultiplier = 3;
+        /// <summary>Galaxy Golem (earth): crystal armour broken only by skills; other damage ×chip meanwhile.</summary>
+        public double golemArmor = 0.1;
+        public double golemChip = 0.6;
     }
 
     public static class SpireEnemyFactory
@@ -48,6 +59,30 @@ namespace P2D.Domain
         public static double TimeLimit(int floor, SpireTuning tuning) =>
             SpireRules.TypeOf(floor) == FloorType.Boss ? tuning.bossTimeLimit : tuning.floorTimeLimit;
 
+        /// <summary>
+        /// Each theme's boss fights its own way (GDD §6.2): the favoured path has the answer — Bastion's
+        /// shields for the wave, Tempest's dodges for the lightning, Arcane's skills for the armour.
+        /// </summary>
+        public static void ApplyThemeMechanic(EnemySpec boss, Element themeElement, SpireTuning tuning)
+        {
+            switch (themeElement)
+            {
+                case Element.Water:
+                    boss.heavyIntervalSeconds = tuning.waveEvery;
+                    boss.heavyMultiplier = tuning.waveMultiplier;
+                    boss.heavyUndodgeable = true;
+                    break;
+                case Element.Wind:
+                    boss.heavyIntervalSeconds = tuning.lightningEvery;
+                    boss.heavyMultiplier = tuning.lightningMultiplier;
+                    break;
+                case Element.Earth:
+                    boss.skillArmor = tuning.golemArmor;
+                    boss.armorChip = tuning.golemChip;
+                    break;
+            }
+        }
+
         public static List<EnemySpec> Floor(int bracket, int floor, Element themeElement, SpireTuning tuning)
         {
             double scale = SpireRules.EnemyStatMultiplier(floor);
@@ -69,13 +104,15 @@ namespace P2D.Domain
                     });
                     break;
                 case FloorType.Boss:
-                    list.Add(new EnemySpec
+                    var boss = new EnemySpec
                     {
                         id = "boss", level = level, element = themeElement, defense = def,
                         hp = hp * tuning.bossHp, attack = atk * tuning.bossAtk,
                         attackIntervalSeconds = 2, heavyIntervalSeconds = tuning.bossHeavyEvery,
                         heavyMultiplier = tuning.heavyMultiplier + 1, enrageSeconds = tuning.bossEnrageSeconds,
-                    });
+                    };
+                    ApplyThemeMechanic(boss, themeElement, tuning);
+                    list.Add(boss);
                     break;
                 default:
                     for (int i = 0; i < tuning.packSize; i++)

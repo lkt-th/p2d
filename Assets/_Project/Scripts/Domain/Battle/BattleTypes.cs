@@ -27,7 +27,7 @@ namespace P2D.Domain
     {
         DragonHit, EnemyHit, Dodged, Telegraph, ShieldGained, ShieldAbsorbed,
         SkillUsed, CommandUsed, EnemyKilled, EnemyEscaped, Enraged, Frozen, Ended,
-        BurnTick, Healed, Reflected, CooldownsReduced, BuffGained
+        BurnTick, Healed, Reflected, CooldownsReduced, BuffGained, ArmorBroken
     }
 
     [Serializable]
@@ -191,6 +191,16 @@ namespace P2D.Domain
 
         /// <summary>HP at the start as a fraction of max (boss phases, continued fights).</summary>
         public double startHpFraction = 1;
+
+        /// <summary>The heavy attack cannot be dodged (Hydroscale's wave): only shields and DEF help.</summary>
+        public bool heavyUndodgeable;
+
+        /// <summary>
+        /// Crystal armour as a fraction of max HP (Galaxy Golem): only skill damage wears it down;
+        /// while it holds, other damage is multiplied by <see cref="armorChip"/>. 0 = none.
+        /// </summary>
+        public double skillArmor;
+        public double armorChip = 0.25;
     }
 
     /// <summary>Dragon numbers the battle needs, usually built from a computed StatSheet.</summary>

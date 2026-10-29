@@ -33,6 +33,7 @@ namespace P2D.Domain
             public int escapeTicksLeft;
             public double burnPerSecond;
             public int burnTicksLeft;
+            public double armor;
 
             public double HpFraction => spec.hp > 0 ? hp / spec.hp : 0;
         }
@@ -49,6 +50,9 @@ namespace P2D.Domain
 
             /// <summary>Set-bonus follow-up hits (burst, counter) don't trigger further procs.</summary>
             public bool isProc;
+
+            /// <summary>Skill and command damage: the only kind that breaks crystal armour.</summary>
+            public bool isSkill;
         }
 
         readonly BattleSetup setup;
@@ -127,6 +131,7 @@ namespace P2D.Domain
                     attackTimer = spec.attackIntervalSeconds > 0 ? ToTicks(spec.attackIntervalSeconds) : 0,
                     heavyTimer = spec.heavyIntervalSeconds > 0 ? ToTicks(spec.heavyIntervalSeconds) : 0,
                     escapeTicksLeft = spec.escapeSeconds > 0 ? ToTicks(spec.escapeSeconds + setup.escapeDelaySeconds) : 0,
+                    armor = spec.skillArmor * spec.hp,
                 });
             }
 
@@ -239,6 +244,7 @@ namespace P2D.Domain
                 burnPerSecond = skill.burnPerSecond,
                 burnSeconds = skill.burnSeconds,
                 maxHpDamage = skill.maxHpDamage,
+                isSkill = true,
             };
             int hits = Math.Max(1, skill.hits);
             if (skill.target == SkillTarget.Single)
@@ -305,7 +311,7 @@ namespace P2D.Domain
                     break;
                 case CommandKind.DamageAll:
                     for (int i = 0; i < Enemies.Count; i++)
-                        if (Enemies[i].alive) HitEnemy(i, new HitOptions { multiplier = command.value });
+                        if (Enemies[i].alive) HitEnemy(i, new HitOptions { multiplier = command.value, isSkill = true });
                     break;
                 case CommandKind.Freeze:
                     frozenTicksLeft = ToTicks(command.durationSeconds);
@@ -474,7 +480,7 @@ namespace P2D.Domain
         void ResolveHeavy(int index, EnemyRuntime e)
         {
             // Manual dodge always works; auto mode falls back to the SPD-based chance.
-            bool dodged = e.dodgedWindup || (Auto && random.NextDouble() < PassiveDodgeChance(e));
+            bool dodged = !e.spec.heavyUndodgeable && (e.dodgedWindup || (Auto && random.NextDouble() < PassiveDodgeChance(e)));
             if (dodged)
             {
                 Gauge = Math.Min(MaxGauge, Gauge + 10);
@@ -537,7 +543,7 @@ namespace P2D.Domain
             bool crit;
             double damage = CombatFormulas.RollDamage(input, random, out crit);
             Gauge = Math.Min(MaxGauge, Gauge + 2);
-            DamageEnemy(index, e, damage, crit, BattleEventType.EnemyHit);
+            DamageEnemy(index, e, damage, crit, BattleEventType.EnemyHit, hit.isSkill);
             if (!e.alive) return;
 
             if (hit.burnPerSecond > 0) ApplyBurn(e, hit.burnPerSecond, hit.burnSeconds);
@@ -549,8 +555,22 @@ namespace P2D.Domain
             }
         }
 
-        void DamageEnemy(int index, EnemyRuntime e, double damage, bool crit, BattleEventType type)
+        void DamageEnemy(int index, EnemyRuntime e, double damage, bool crit, BattleEventType type, bool skill = false)
         {
+            if (e.armor > 0)
+            {
+                if (skill)
+                {
+                    double absorbed = Math.Min(e.armor, damage);
+                    e.armor -= absorbed;
+                    damage -= absorbed; // what breaks through goes to HP
+                    if (e.armor <= 0) Emit(BattleEventType.ArmorBroken, index, 0);
+                }
+                else
+                {
+                    damage *= e.spec.armorChip;
+                }
+            }
             e.hp = Math.Max(0, e.hp - damage);
             events.Add(new BattleEvent { tick = Tick, type = type, enemy = index, amount = damage, crit = crit });
             if (traits.lifesteal > 0) Heal(damage * traits.lifesteal);

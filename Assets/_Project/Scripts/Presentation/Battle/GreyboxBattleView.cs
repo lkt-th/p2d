@@ -428,6 +428,12 @@ namespace P2D.Presentation.Battle
             bool telegraph = sim.IsTelegraphActive;
             warningDisc.gameObject.SetActive(telegraph);
             dodgeHint.gameObject.SetActive(telegraph);
+            if (telegraph)
+            {
+                bool wave = false;
+                foreach (var e in sim.Enemies) if (e.alive && e.windupLeft > 0 && e.spec.heavyUndodgeable) wave = true;
+                dodgeHint.text = wave ? Loc.T("A WAVE IS COMING! BRACE") : Loc.T("INCOMING! SWIPE TO DODGE");
+            }
         }
 
         void UpdateHud(BattleSimulation sim)
@@ -487,6 +493,10 @@ namespace P2D.Presentation.Battle
                     break;
                 case BattleEventType.Dodged:
                     Float(dragon.position + Vector3.up * 2.4f, Loc.T("DODGE"), new Color(0.6f, 0.9f, 1f), 44);
+                    break;
+                case BattleEventType.ArmorBroken:
+                    if (e.enemy >= 0 && e.enemy < enemies.Count)
+                        Float(enemies[e.enemy].root.position + Vector3.up * 2.6f, Loc.T("ARMOR BROKEN!"), new Color(0.75f, 0.85f, 1f), 52);
                     break;
                 case BattleEventType.Enraged:
                     Float(new Vector3(0, 3, 3.6f), Loc.T("ENRAGED"), new Color(1f, 0.2f, 0.2f), 56);

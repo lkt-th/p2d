@@ -50,6 +50,7 @@ namespace P2D.Domain
             foreach (var slot in starter)
             {
                 var item = EquipmentGenerator.Create(random, Rarity.Common, slot, GrowthPath.Fury, NewUid(save));
+                if (slot == EquipSlot.HeartCore) item.element = Element.Water; // the starter breath: beats chapter 1's fire
                 save.equipment.Add(item);
                 save.dragon.equipped[(int)slot] = item.uid;
             }
@@ -303,8 +304,8 @@ namespace P2D.Domain
             return ActionResult.Ok(Loc.F("Stage {0}", d.stage));
         }
 
-        /// <summary>The breath element; the Heart Core decides it (Water until heart elements are authored).</summary>
-        public static Element HeartElement(EquipmentState heart) => Element.Water;
+        /// <summary>The breath element: the equipped Heart Core decides it (GDD §3.5); Water without one.</summary>
+        public static Element HeartElement(EquipmentState heart) => heart != null && heart.slot == EquipSlot.HeartCore ? heart.element : Element.Water;
 
         // ---- riders --------------------------------------------------------------------
 
@@ -317,6 +318,34 @@ namespace P2D.Domain
             save.dragon.mainRiderId = riderId;
             AutoSkillsIfInvalid(save);
             return ActionResult.Ok();
+        }
+
+        /// <summary>
+        /// Puts a rider in a free support slot, or takes it out if it is already there (GDD §5.6: from
+        /// Stage 4, two slots giving 30% of the pact buffs). The main rider cannot also support.
+        /// </summary>
+        public static ActionResult ToggleSupportRider(PlayerSave save, string riderId)
+        {
+            if (!FeatureUnlocks.IsUnlocked(save, Feature.Riders)) return FeatureUnlocks.Locked(Feature.Riders);
+            int slots = DragonRules.SupportRiderSlots(save.dragon.stage);
+            if (slots == 0) return ActionResult.Fail(Loc.F("Support riders open at stage {0}", 4));
+            if (save.FindRider(riderId) == null) return ActionResult.Fail(Loc.T("Rider not owned"));
+            if (save.dragon.mainRiderId == riderId) return ActionResult.Fail(Loc.T("The main rider cannot also support"));
+
+            var ids = save.dragon.supportRiderIds;
+            for (int i = 0; i < ids.Length; i++)
+                if (ids[i] == riderId)
+                {
+                    ids[i] = "";
+                    return ActionResult.Ok(Loc.F("{0} left the support slot", Loc.Rider(riderId)));
+                }
+            for (int i = 0; i < Math.Min(slots, ids.Length); i++)
+                if (string.IsNullOrEmpty(ids[i]) || save.FindRider(ids[i]) == null)
+                {
+                    ids[i] = riderId;
+                    return ActionResult.Ok(Loc.F("{0} now supports (30% of pact buffs)", Loc.Rider(riderId)));
+                }
+            return ActionResult.Fail(Loc.T("Both support slots are full"));
         }
 
         public static long StarUpGold(RiderRank rank, int targetStar) =>

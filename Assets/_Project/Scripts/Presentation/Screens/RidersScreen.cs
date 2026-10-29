@@ -32,11 +32,21 @@ namespace P2D.Presentation.Screens
                 return rank != 0 ? rank : b.star.CompareTo(a.star);
             });
 
+            int supportSlots = DragonRules.SupportRiderSlots(save.dragon.stage);
+            bool hasSupport = supportSlots > 0;
+            if (hasSupport)
+            {
+                var names = new List<string>();
+                foreach (var sid in save.dragon.supportRiderIds) names.Add(string.IsNullOrEmpty(sid) ? Loc.T("empty") : Loc.Rider(sid));
+                Cell(UiKit.Row(list, 70, UiKit.Surface), Loc.F("Support riders (30% of pact buffs): {0}", string.Join(", ", names.ToArray())), 0.02f, 1, 26);
+            }
+
             foreach (var state in owned)
             {
                 var profile = RiderCatalog.Find(state.riderId);
                 if (profile == null) continue;
                 bool riding = save.dragon.mainRiderId == state.riderId;
+                bool supporting = System.Array.IndexOf(save.dragon.supportRiderIds, state.riderId) >= 0;
                 var row = UiKit.Row(list, 170, riding ? new Color(0.22f, 0.16f, 0.12f) : UiKit.Surface);
 
                 var buffs = new List<string>();
@@ -47,15 +57,19 @@ namespace P2D.Presentation.Screens
 
                 Cell(row, "<b>" + Loc.Rider(state.riderId) + "</b>  " + profile.rank + "  " + Fmt.Stars(state.star)
                     + "   " + Loc.F("copies {0}", state.copies) + "\n" + string.Join(", ", buffs.ToArray())
-                    + (command != null ? "\n<color=#a3a8ba>" + Loc.F("Command: {0}", Loc.Skill(command.id)) + "</color>" : ""), 0.02f, 0.6f, 26);
+                    + (command != null ? "\n<color=#a3a8ba>" + Loc.F("Command: {0}", Loc.Skill(command.id)) + "</color>" : ""), 0.02f, hasSupport ? 0.5f : 0.6f, 26);
 
                 string id = state.riderId;
-                CellButton(row, riding ? Loc.T("RIDING") : Loc.T("RIDE"), 0.61f, 0.8f,
+                if (hasSupport)
+                    CellButton(row, supporting ? Loc.T("SUPPORTING") : Loc.T("SUPPORT"), 0.5f, 0.66f,
+                        () => Menu.Commit(GameActions.ToggleSupportRider(save, state.riderId)), !riding,
+                        supporting ? new Color(0.25f, 0.45f, 0.30f) : UiKit.SurfaceAlt, 22);
+                CellButton(row, riding ? Loc.T("RIDING") : Loc.T("RIDE"), hasSupport ? 0.66f : 0.61f, 0.83f,
                     () => Menu.Commit(GameActions.SetMainRider(save, id), Loc.F("Now riding {0}", Loc.Rider(id))), !riding);
 
                 bool maxed = state.star >= RiderRules.MaxStar;
                 string starText = maxed ? "5*" : Loc.T("STAR UP") + "\n" + Loc.F("{0} gold", Fmt.Num(GameActions.StarUpGold(profile.rank, state.star + 1)));
-                CellButton(row, starText, 0.8f, 1, () => Menu.Commit(GameActions.StarUp(save, id)),
+                CellButton(row, starText, 0.83f, 1, () => Menu.Commit(GameActions.StarUp(save, id)),
                     !maxed && RiderRules.CanStarUp(state, seals[(int)profile.rank]), UiKit.SurfaceAlt);
             }
         }

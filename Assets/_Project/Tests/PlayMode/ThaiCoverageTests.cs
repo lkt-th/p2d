@@ -108,6 +108,9 @@ namespace P2D.PlayMode.Tests
             save.spire.pendingChestFloor = 25;  // the weekly chest row
             save.spire.catchUpFloors = 10;      // the catch-up row
             SpireAffixes.Live = true;           // the affix row
+            save.dragon.stage = 4;              // support rider slots and buttons
+            save.riders.Add(new RiderState { riderId = "lira", star = 1 });
+            save.dragon.supportRiderIds[0] = "lira";
             PresetActions.Store(save, 0);       // a filled preset next to empty ones
             save.wallet.pactSigils = 30;
             save.wallet.refineStones = 10;

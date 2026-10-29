@@ -21,14 +21,14 @@ weekly dungeon. The user writes in Thai — reply in Thai.
 | `P2D.Services` | `Scripts/Services` | Unity glue: `SaveManager`, `FileSaveStorage`, `JsonUtilitySaveSerializer`, `ServerClock`. |
 | `P2D.Presentation` | `Scripts/Presentation` | `SafeAreaFitter`, `PortraitCanvasScaler`, `BattleRunner`. |
 | `P2D.Editor` | `Scripts/Editor` | Portrait player-settings hook, **P2D → Balance Simulator** window. |
-| `P2D.Domain.Tests` | `Tests/EditMode` | NUnit EditMode tests (186). |
+| `P2D.Domain.Tests` | `Tests/EditMode` | NUnit EditMode tests (191). |
 | `P2D.PlayMode.Tests` | `Tests/PlayMode` | PlayMode tests for the greybox scenes (30). |
 
 Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules`, `RiderCatalog`,
 `SkillCatalog`, `PathTraitRules`/`SkillLoadoutRules`, `LoadoutCalculator`, `BattleSimulation`
 (deterministic, 30 ticks/s, seed + input log replays exactly), `SpireRules`/`WeeklyCalendar`,
 `HuntRules`, `SummonRules`, `PlayerSave`/`SaveService`/`OfflineProgress`, `BalanceSimulator`,
-`GameActions` (every menu action: hatch, equip, enhance, reforge, refine, salvage, feed, evolve, ride, star up, summon, spire battle/result),
+`GameActions` (every menu action: hatch, equip, support riders, enhance, reforge, refine, salvage, feed, evolve, ride, star up, summon, spire battle/result),
 `EquipmentGenerator`, `SetCatalog` (2/4-piece sets), `SpireThemes`, `SpireActions` (sweep, boss claims, weekly chest, catch-up rewards), `PresetActions` (3 loadout presets), `FreeSummon` (one free pull a day), `FeaturedRiders` (weekly +20% spire materials), `SpireAffixes` (weekly affixes, on since round 8; tests that need an affix-free spire battle set `Live = false` and restore it), `HuntActions` (zones, runs, auto hunt), `ShopActions` (shard shop, stamina refill), `NestActions` (idle income, nest level), `StoryActions` (3 chapters × 10 stages, first-clear rewards), `StoryScript` (scenes before key stages), `MissionActions` (daily / weekly missions; actions without a clock record into `pending`, `Sync` folds it into today), `FeatureUnlocks` (story stage gates for missions / enhance / riders / hunt / spire / workshop; Domain refuses locked actions, test helpers set `story.cleared = StoryActions.TotalStages`).
 
 ## Conventions
@@ -69,7 +69,7 @@ Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules
   from `Art/Fonts/Resources`, falling back to `LegacyRuntime.ttf`. Legacy `Text` has no OpenType shaping, so every
   label gets `ThaiMarkPositioner`, which moves stacked tone marks and lower vowels into place (`docs/Unity-Tech.md` §8).
   Build new text through `UiKit.Label` (or add that component) so Thai stays readable.
-- A new game opens on `HatchScreen` (tap the egg, name the dragon; bars hidden until `dragon.hatched`). Save format v2 added `hatched`; the v1 → v2 step marks older saves as hatched.
+- A new game opens on `HatchScreen` (tap the egg, name the dragon; bars hidden until `dragon.hatched`). Save format v2 added `hatched` (v1 → v2 marks older saves hatched); v3 gave Heart Cores an `element` (the breath element, from the uid; v2 → v3 keeps older hearts Water).
 - Starter kit (`GameActions.EnsureStarterKit`) sets the dragon to Lv 10 and gives 3 scales as a stand-in for
   story chapters 1–2 (a Lv 1 dragon loses spire floor 1).
 - Not built yet: real art/prefabs, IAP (packs, Dragon Pass), backend (UGS), cloud save, URP (the greybox uses the built-in pipeline).

@@ -398,7 +398,9 @@ namespace P2D.Presentation.Screens
             var parts = new List<string>();
             foreach (var s in item.subs ?? new StatModifier[0]) parts.Add(Stat(s));
             var set = SetCatalog.Find(item.setId);
-            return "<b>" + Loc.Enum(item.slot) + "</b>  " + RarityTag(item.rarity) + " +" + item.enhance + "   " + Loc.Enum(item.path) + " "
+            return "<b>" + Loc.Enum(item.slot) + "</b>"
+                + (item.slot == EquipSlot.HeartCore ? " <color=#9fd3ff>" + Loc.F("{0} breath", Loc.Enum(item.element)) + "</color>" : "")
+                + "  " + RarityTag(item.rarity) + " +" + item.enhance + "   " + Loc.Enum(item.path) + " "
                 + AffinityRules.ForEquipment(item.rarity, item.enhance) + (set != null ? "   <color=#e9c46a>" + Loc.T(set.name) + "</color>" : "") + "\n" + Stat(main)
                 + (parts.Count > 0 ? "   <color=#a3a8ba>" + string.Join(", ", parts.ToArray()) + "</color>" : "");
         }

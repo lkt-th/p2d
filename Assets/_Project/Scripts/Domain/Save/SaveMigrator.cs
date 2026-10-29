@@ -10,7 +10,7 @@ namespace P2D.Domain
     /// </summary>
     public sealed class SaveMigrator
     {
-        public const int CurrentVersion = 2;
+        public const int CurrentVersion = 3;
 
         readonly Dictionary<int, Action<PlayerSave>> steps = new Dictionary<int, Action<PlayerSave>>();
         readonly int targetVersion;
@@ -51,6 +51,12 @@ namespace P2D.Domain
 
         public static SaveMigrator Default() => new SaveMigrator()
             // v2 added the egg: saves made before it already have a dragon.
-            .Add(1, save => save.dragon.hatched = true);
+            .Add(1, save => save.dragon.hatched = true)
+            // v3 gave Heart Cores an element; every older one breathed water, so keep that.
+            .Add(2, save =>
+            {
+                foreach (var item in save.equipment)
+                    if (item.slot == EquipSlot.HeartCore) item.element = Element.Water;
+            });
     }
 }

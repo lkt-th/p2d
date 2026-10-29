@@ -14,5 +14,8 @@ namespace P2D.Domain
         public int enhance;
         public StatModifier main;
         public StatModifier[] subs = new StatModifier[0];
+
+        /// <summary>Breath element of a Heart Core (GDD §3.5); unused on other slots.</summary>
+        public Element element;
     }
 }

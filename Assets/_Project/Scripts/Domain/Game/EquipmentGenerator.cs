@@ -49,12 +49,24 @@ namespace P2D.Domain
                 rarity = rarity,
                 path = path,
                 main = new StatModifier(stat, type, EquipmentRules.MainBase(stat, type, rarity)),
+                element = slot == EquipSlot.HeartCore ? HeartElementFor(uid) : Element.Fire,
             };
             var subs = new List<StatModifier>();
             for (int i = 0; i < StartingSubs[(int)rarity]; i++)
                 AddNewSub(random, item, subs);
             item.subs = subs.ToArray();
             return item;
+        }
+
+        /// <summary>
+        /// A Heart Core's element (Fire / Water / Wind / Earth) from its uid, so creating one does not
+        /// draw from the random stream (existing drop sequences stay the same). Light/Dark come later.
+        /// </summary>
+        public static Element HeartElementFor(string uid)
+        {
+            int sum = 0;
+            if (uid != null) foreach (char c in uid) sum = unchecked(sum * 31 + c);
+            return (Element)(((sum % 4) + 4) % 4);
         }
 
         /// <summary>A random slot (unlocked at <paramref name="stage"/>) and path.</summary>

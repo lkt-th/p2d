@@ -27,7 +27,8 @@ namespace P2D.Presentation.Screens
             var head = UiKit.Row(list, 200, new Color(0.17f, 0.11f, 0.09f));
             Cell(head, "<b>" + Loc.T(theme.name) + "</b>   " + Loc.F("enemies: {0}", Loc.Enum(theme.element))
                 + "\n" + Loc.F("Bracket B{0}   ·   resets in {1}", save.spire.bracket, Fmt.Duration(WeeklyCalendar.NextResetUtc(now) - now))
-                + "\n" + Loc.F("Tip: a {0} heart core has the edge", Loc.Enum(SpireThemes.Counter(theme.element))), 0.02f, 1, 30);
+                + "\n" + Loc.F("Tip: a {0} heart core has the edge", Loc.Enum(SpireThemes.Counter(theme.element)))
+                + "   " + Loc.F("(yours: {0})", Loc.Enum(GameActions.HeartElement(save.FindEquipment(save.dragon.equipped[(int)EquipSlot.HeartCore])))), 0.02f, 1, 30);
 
             var affixes = SpireAffixes.Current(save);
             if (affixes != null)

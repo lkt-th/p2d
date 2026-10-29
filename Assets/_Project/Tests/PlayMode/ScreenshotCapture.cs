@@ -115,6 +115,47 @@ namespace P2D.PlayMode.Tests
             Capture("battle-result");
         }
 
+        [UnityTest]
+        public IEnumerator CapturePathLooks()
+        {
+            // Non-Fury builds in battle: the dragon's skin and parts follow its dominant path.
+            var root = new GameObject("Greybox Battle").AddComponent<GreyboxBattleBootstrap>();
+            yield return null;
+            foreach (var build in new[] { "B4 Tempest", "B4 Bastion", "B5 Arcane" })
+            {
+                while (root.CurrentBuild.name != build) root.CycleBuild();
+                root.Runner.SetSpeed(1);
+                for (int i = 0; i < 20; i++) yield return null;
+                Capture("battle-" + build.Substring(3).ToLowerInvariant());
+            }
+            Object.Destroy(root.gameObject);
+            foreach (var go in Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None))
+                if (go.transform.parent == null && go.name != "Code-based tests runner") Object.Destroy(go);
+            yield return null;
+
+            // Evolution cutscene: Hatchling → Drake, charging and revealed.
+            var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
+            yield return null;
+            var save = menu.Save;
+            save.dragon.hatched = true;
+            save.story.cleared = P2D.Domain.StoryActions.TotalStages;
+            save.dragon.level = P2D.Domain.DragonRules.LevelCap(1);
+            save.wallet.gold = 100000;
+            menu.Show(ScreenId.Dragon);
+            menu.Commit(P2D.Domain.GameActions.Evolve(save));
+            var cutscene = EvolutionCutscene.Play(menu, 1, save.dragon.stage);
+            float start = Time.unscaledTime;
+            while (Time.unscaledTime - start < 1.5f) yield return null;
+            Capture("evolution-charge");
+            while (Time.unscaledTime - start < 4.2f) yield return null;
+            Capture("evolution-reveal");
+            cutscene.Close();
+            menu.Show(ScreenId.Nest);
+            yield return null;
+            yield return null;
+            Capture("nest-drake");
+        }
+
         /// <summary>Renders all cameras and overlay canvases into one 1080×1920 PNG.</summary>
         static void Capture(string name)
         {

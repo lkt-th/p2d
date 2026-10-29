@@ -21,15 +21,15 @@ weekly dungeon. The user writes in Thai — reply in Thai.
 | `P2D.Services` | `Scripts/Services` | Unity glue: `SaveManager`, `FileSaveStorage`, `JsonUtilitySaveSerializer`, `ServerClock`. |
 | `P2D.Presentation` | `Scripts/Presentation` | `SafeAreaFitter`, `PortraitCanvasScaler`, `BattleRunner`. |
 | `P2D.Editor` | `Scripts/Editor` | Portrait player-settings hook, **P2D → Balance Simulator** window. |
-| `P2D.Domain.Tests` | `Tests/EditMode` | NUnit EditMode tests (140). |
-| `P2D.PlayMode.Tests` | `Tests/PlayMode` | PlayMode tests for the greybox scenes (10). |
+| `P2D.Domain.Tests` | `Tests/EditMode` | NUnit EditMode tests (150). |
+| `P2D.PlayMode.Tests` | `Tests/PlayMode` | PlayMode tests for the greybox scenes (11). |
 
 Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules`, `RiderCatalog`,
 `SkillCatalog`, `PathTraitRules`/`SkillLoadoutRules`, `LoadoutCalculator`, `BattleSimulation`
 (deterministic, 30 ticks/s, seed + input log replays exactly), `SpireRules`/`WeeklyCalendar`,
 `HuntRules`, `SummonRules`, `PlayerSave`/`SaveService`/`OfflineProgress`, `BalanceSimulator`,
 `GameActions` (every menu action: equip, enhance, reforge, refine, salvage, feed, evolve, ride, star up, summon, spire battle/result),
-`EquipmentGenerator`, `SetCatalog` (2/4-piece sets), `SpireThemes`, `HuntActions` (zones, runs, auto hunt), `ShopActions` (shard shop, stamina refill), `NestActions` (idle income, nest level).
+`EquipmentGenerator`, `SetCatalog` (2/4-piece sets), `SpireThemes`, `HuntActions` (zones, runs, auto hunt), `ShopActions` (shard shop, stamina refill), `NestActions` (idle income, nest level), `StoryActions` (3 chapters × 10 stages, first-clear rewards).
 
 ## Conventions
 
@@ -57,7 +57,7 @@ Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules
 - Playable greybox, two scenes that each hold one bootstrap and build everything else in code
   (regenerate with **P2D → Create Greybox Scenes**):
   - `Scenes/Main.unity` (first in Build Settings) — `MainMenu`: loads the save via `SaveManager`, gives the
-    starter kit, portrait shell + tabs DRAGON / RIDERS (→ Summon) / NEST / ADVENTURE (Spire | Hunt) / SHOP (`Presentation/Screens`, built
+    starter kit, portrait shell + tabs DRAGON / RIDERS (→ Summon) / NEST / ADVENTURE (Story | Spire | Hunt) / SHOP (`Presentation/Screens`, built
     with `UiKit`). Every button calls `GameActions` (Domain) on the live `PlayerSave`, then `MainMenu.Commit`.
   - `Scenes/GreyboxBattle.unity` — `GreyboxBattleBootstrap` + `GreyboxBattleView` (3D primitives + HUD) driving
     `BattleSimulation` via `BattleRunner`. Opened directly it is a sandbox (BUILD cycles sample builds);
@@ -69,7 +69,7 @@ Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules
   (`docs/Unity-Tech.md` §8) before localization.
 - Starter kit (`GameActions.EnsureStarterKit`) sets the dragon to Lv 10 and gives 3 scales as a stand-in for
   story chapters 1–2 (a Lv 1 dragon loses spire floor 1).
-- Not built yet: real art/prefabs, IAP (packs, Dragon Pass), story mode, backend (UGS), cloud save, path visuals, URP (the greybox uses the built-in pipeline).
+- Not built yet: real art/prefabs, IAP (packs, Dragon Pass), story dialogue and feature unlocks, backend (UGS), cloud save, path visuals, URP (the greybox uses the built-in pipeline).
 
 ## Open decisions (ask the user)
 

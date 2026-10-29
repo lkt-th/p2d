@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace P2D.Presentation.Screens
 {
-    public enum ScreenId { Nest, Dragon, Riders, Spire, Summon, Hunt, Shop }
+    public enum ScreenId { Nest, Dragon, Riders, Spire, Summon, Hunt, Shop, Story }
 
     /// <summary>
     /// The menu scene: loads the save, builds the portrait shell (resource bar, content area,
@@ -20,7 +20,7 @@ namespace P2D.Presentation.Screens
     /// </summary>
     public sealed class MainMenu : MonoBehaviour
     {
-        // Bottom bar order from the mockup; Hunt shares ADVENTURE with the spire, Summon opens from RIDERS.
+        // Bottom bar order from the mockup; Story and Hunt share ADVENTURE with the spire, Summon opens from RIDERS.
         static readonly string[] NavLabels = { "DRAGON", "RIDERS", "NEST", "ADVENTURE", "SHOP" };
         static readonly ScreenId[] NavTargets = { ScreenId.Dragon, ScreenId.Riders, ScreenId.Nest, ScreenId.Spire, ScreenId.Shop };
 
@@ -63,6 +63,7 @@ namespace P2D.Presentation.Screens
             AddScreen(ScreenId.Summon, new SummonScreen());
             AddScreen(ScreenId.Hunt, new HuntScreen());
             AddScreen(ScreenId.Shop, new ShopScreen());
+            AddScreen(ScreenId.Story, new StoryScreen());
 
             bool returningFromBattle = !string.IsNullOrEmpty(BattleHandoff.LastMessage);
             Show(returningFromBattle ? returnScreen : ScreenId.Nest);
@@ -91,7 +92,8 @@ namespace P2D.Presentation.Screens
         {
             switch (id)
             {
-                case ScreenId.Hunt: return ScreenId.Spire;
+                case ScreenId.Hunt:
+                case ScreenId.Story: return ScreenId.Spire;
                 case ScreenId.Summon: return ScreenId.Riders;
                 default: return id;
             }
@@ -151,6 +153,34 @@ namespace P2D.Presentation.Screens
             toastText.text = message;
             toastText.transform.parent.gameObject.SetActive(true);
             toastUntil = Time.unscaledTime + seconds;
+        }
+
+        /// <summary>Fights the next story stage in the battle scene; the first clear is paid on return.</summary>
+        public void StartStoryBattle(int index)
+        {
+            var setup = StoryActions.BuildBattle(Save, index, Environment.TickCount, tuning);
+            SaveManager.Instance.SaveNow();
+            returnScreen = ScreenId.Story;
+            var chapter = StoryActions.Chapter(StoryActions.ChapterOf(index));
+
+            BattleHandoff.Pending = new BattleHandoff.Request
+            {
+                setup = setup,
+                title = "Stage " + StoryActions.Label(index) + "  ·  " + chapter.name,
+                onFinished = (outcome, inputs) =>
+                {
+                    var live = SaveManager.Instance.Current;
+                    var reward = StoryActions.ApplyResult(live, index, outcome, new SeededRandom(Environment.TickCount));
+                    SaveManager.Instance.MarkDirty();
+                    SaveManager.Instance.SaveNow();
+                    BattleHandoff.LastMessage = reward.firstClear
+                        ? "Stage " + StoryActions.Label(index) + " cleared! +" + Fmt.Num(reward.gold) + " gold, +" + reward.essence + " essence"
+                          + (reward.gear != null ? ", new " + reward.gear.rarity + " " + reward.gear.slot : "")
+                          + (reward.riderId.Length > 0 ? ", rider " + reward.riderId + (reward.riderIsNew ? " joins you" : " (copy)") : "")
+                        : "Stage " + StoryActions.Label(index) + ": " + outcome;
+                },
+            };
+            SceneManager.LoadScene(BattleHandoff.BattleScene);
         }
 
         /// <summary>Starts a spire battle in the battle scene; the result is applied to the save on return.</summary>
@@ -289,13 +319,15 @@ namespace P2D.Presentation.Screens
             return button;
         }
 
-        /// <summary>SPIRE | HUNTING GROUNDS switch at the top of the adventure screens.</summary>
+        /// <summary>STORY | SPIRE | HUNTING switch at the top of the adventure screens.</summary>
         protected void AdventureTabs(RectTransform list, ScreenId active)
         {
             var row = UiKit.Row(list, 100);
-            CellButton(row, "WEEKLY SPIRE", 0, 0.5f, () => Menu.Show(ScreenId.Spire), true,
+            CellButton(row, "STORY", 0, 1 / 3f, () => Menu.Show(ScreenId.Story), true,
+                active == ScreenId.Story ? UiKit.Accent : UiKit.SurfaceAlt);
+            CellButton(row, "WEEKLY SPIRE", 1 / 3f, 2 / 3f, () => Menu.Show(ScreenId.Spire), true,
                 active == ScreenId.Spire ? UiKit.Accent : UiKit.SurfaceAlt);
-            CellButton(row, "HUNTING GROUNDS", 0.5f, 1, () => Menu.Show(ScreenId.Hunt), true,
+            CellButton(row, "HUNTING", 2 / 3f, 1, () => Menu.Show(ScreenId.Hunt), true,
                 active == ScreenId.Hunt ? UiKit.Accent : UiKit.SurfaceAlt);
         }
 

@@ -174,6 +174,44 @@ namespace P2D.PlayMode.Tests
         }
 
         [UnityTest]
+        public IEnumerator StoryBattle_RoundTrip_ClearsStageOne()
+        {
+            var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
+            yield return null;
+            menu.Show(ScreenId.Story);
+            yield return null;
+            FindButton("FIGHT STAGE 1-1").onClick.Invoke();
+
+            GreyboxBattleBootstrap battle = null;
+            for (int i = 0; i < 120 && battle == null; i++)
+            {
+                yield return null;
+                battle = Object.FindAnyObjectByType<GreyboxBattleBootstrap>();
+            }
+            Assert.IsNotNull(battle);
+            yield return null;
+            battle.Runner.SetAuto(true);
+            yield return null;
+            battle.Runner.Skip();
+            yield return null;
+            Assert.AreEqual(BattleOutcome.Victory, battle.Runner.Simulation.Outcome);
+            foreach (var b in Object.FindObjectsByType<Button>(FindObjectsSortMode.None))
+                if (b.gameObject.activeInHierarchy && b.name == "Continue") b.onClick.Invoke();
+
+            MainMenu back = null;
+            for (int i = 0; i < 120 && back == null; i++)
+            {
+                yield return null;
+                back = Object.FindAnyObjectByType<MainMenu>();
+            }
+            Assert.IsNotNull(back);
+            yield return null;
+            Assert.AreEqual(ScreenId.Story, back.Current);
+            Assert.AreEqual(1, SaveManager.Instance.Current.story.cleared);
+            Assert.IsNotNull(FindButton("FIGHT STAGE 1-2"));
+        }
+
+        [UnityTest]
         public IEnumerator HuntBattle_RoundTrip_ReturnsToHunt()
         {
             var menu = new GameObject("Main Menu").AddComponent<MainMenu>();

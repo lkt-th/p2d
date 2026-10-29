@@ -105,6 +105,7 @@ namespace P2D.PlayMode.Tests
             save.story.cleared = 20;
             save.spire.highestFloor = 20;       // sweep rows, boss claims
             save.spire.pendingChestFloor = 25;  // the weekly chest row
+            save.spire.catchUpFloors = 10;      // the catch-up row
             PresetActions.Store(save, 0);       // a filled preset next to empty ones
             save.wallet.pactSigils = 30;
             save.wallet.refineStones = 10;

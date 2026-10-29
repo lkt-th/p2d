@@ -22,6 +22,7 @@ namespace P2D.Domain
         public string tier = "";
         public long gold;
         public int forgeStones;
+        public int essence;
         public int elementCrystals;
         public int pactSigils;
         public int ancientScales;
@@ -110,6 +111,36 @@ namespace P2D.Domain
                 + (result.ancientScales > 0 ? Loc.F(", +{0} ancient scales", result.ancientScales) : "")
                 + (result.gear != null ? Loc.F(", new {0} {1}", Loc.Enum(result.gear.rarity), Loc.Enum(result.gear.slot)) : "");
             return result;
+        }
+
+        /// <summary>
+        /// Pays the first-clear materials of the floors this week's catch-up start skipped (GDD §6.4,
+        /// Balance §5.7): gold, forge stones, essence, theme crystals and sigils for floors 1..N, no items.
+        /// </summary>
+        public static ChestReward ClaimCatchUp(PlayerSave save, Element themeElement)
+        {
+            var reward = new ChestReward();
+            int floors = Math.Min(save.spire.catchUpFloors, SpireRules.TopFloor);
+            if (floors <= 0) { reward.message = Loc.T("No catch-up rewards waiting"); return reward; }
+            for (int f = 1; f <= floors; f++)
+            {
+                var r = SpireRules.FirstClearRewards(f, save.spire.bracket);
+                reward.gold += r.gold;
+                reward.forgeStones += r.forgeStones;
+                reward.elementCrystals += r.elementCrystals;
+                reward.pactSigils += r.pactSigils;
+                reward.essence += r.dragonEssence;
+            }
+            var w = save.wallet;
+            w.gold += reward.gold;
+            w.forgeStones += reward.forgeStones;
+            w.dragonEssence += reward.essence;
+            w.elementCrystals[(int)themeElement] += reward.elementCrystals;
+            w.pactSigils += reward.pactSigils;
+            save.spire.catchUpFloors = 0;
+            reward.ok = true;
+            reward.message = Loc.F("Catch-up floors 1–{0}: +{1} gold, +{2} forge stones, +{3} sigils", floors, reward.gold, reward.forgeStones, reward.pactSigils);
+            return reward;
         }
 
         /// <summary>Chest tier name for last week's best floor (GDD §6 table).</summary>

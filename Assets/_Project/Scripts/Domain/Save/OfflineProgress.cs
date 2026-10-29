@@ -86,6 +86,7 @@ namespace P2D.Domain
             spire.pendingChestFloor = playedLastWeek ? spire.highestFloor : 0;
             spire.lastWeekBest = best;
             spire.highestFloor = SpireRules.CatchUpStartFloor(best);
+            spire.catchUpFloors = spire.highestFloor; // their first-clear materials wait on the spire screen
             spire.bracket = SpireRules.BracketForStage(save.dragon.stage);
             spire.bossClaims = new int[3];
             spire.weekIndex = week;

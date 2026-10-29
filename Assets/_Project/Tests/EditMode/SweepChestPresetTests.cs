@@ -102,6 +102,31 @@ namespace P2D.Domain.Tests
         }
 
         [Test]
+        public void CatchUp_PaysTheSkippedFloorsOnce()
+        {
+            var save = NewGame();
+            save.spire.highestFloor = 20;
+            OfflineProgress.Apply(save, Now.AddDays(7));
+            Assert.AreEqual(10, save.spire.highestFloor, "the new week starts at half of last week's best");
+            Assert.AreEqual(10, save.spire.catchUpFloors);
+
+            long expectedGold = 0;
+            int expectedSigils = 0;
+            for (int f = 1; f <= 10; f++)
+            {
+                var r = SpireRules.FirstClearRewards(f, save.spire.bracket);
+                expectedGold += r.gold;
+                expectedSigils += r.pactSigils;
+            }
+            long gold = save.wallet.gold;
+            int sigils = save.wallet.pactSigils;
+            Assert.IsTrue(SpireActions.ClaimCatchUp(save, Element.Fire).ok);
+            Assert.AreEqual(gold + expectedGold, save.wallet.gold);
+            Assert.AreEqual(sigils + expectedSigils, save.wallet.pactSigils);
+            Assert.IsFalse(SpireActions.ClaimCatchUp(save, Element.Fire).ok, "claims once");
+        }
+
+        [Test]
         public void Preset_StoresAndRestoresTheLoadout()
         {
             var save = NewGame();

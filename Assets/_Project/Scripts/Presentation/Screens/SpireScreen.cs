@@ -70,6 +70,15 @@ namespace P2D.Presentation.Screens
         /// <summary>Last week's chest, waiting to be opened (it is earned at the weekly reset).</summary>
         void ChestRow(PlayerSave save)
         {
+            if (save.spire.catchUpFloors > 0)
+            {
+                var catchUp = UiKit.Row(list, 120, new Color(0.12f, 0.17f, 0.12f));
+                Cell(catchUp, "<b>" + Loc.T("Catch-up start") + "</b>\n" + Loc.F("This week starts at floor {0}: claim floors 1–{0}", save.spire.catchUpFloors),
+                    0.02f, 0.7f, 28);
+                var theme = SpireThemes.ForTime(ServerClock.UtcNow).element;
+                CellButton(catchUp, Loc.T("CLAIM"), 0.72f, 1, () => Menu.Commit(Result(SpireActions.ClaimCatchUp(save, theme))), true, UiKit.Accent);
+            }
+
             int floor = save.spire.pendingChestFloor;
             if (floor <= 0) return;
             var row = UiKit.Row(list, 120, new Color(0.22f, 0.17f, 0.08f));

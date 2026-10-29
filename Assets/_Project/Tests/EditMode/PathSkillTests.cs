@@ -86,6 +86,15 @@ namespace P2D.Domain.Tests
         // ---- traits and resonances ----
 
         [Test]
+        public void BastionTierTwo_StartShieldAndHpScaledBasics()
+        {
+            var traits = PathTraitRules.BattleTraits(Affinity(bastion: 60));
+            Assert.AreEqual(0.10, traits.startShieldPercent, 1e-9);
+            Assert.AreEqual(0.07, traits.basicMaxHpDamage, 1e-9, "Balance 10 round 10");
+            Assert.AreEqual(0, PathTraitRules.BattleTraits(Affinity(bastion: 20)).basicMaxHpDamage, "tier I has no HP-scaled basics");
+        }
+
+        [Test]
         public void TraitStats_FollowTiers()
         {
             var sheet = new StatSheet();

@@ -39,7 +39,7 @@ namespace P2D.Domain
             if (Tier(affinity, GrowthPath.Fury) >= 2) { t.critBurnPerSecond = 0.20; t.critBurnSeconds = 3; }
             if (Tier(affinity, GrowthPath.Fury) >= 3) t.lowHpDamageBonus = 0.20;
 
-            if (Tier(affinity, GrowthPath.Bastion) >= 2) { t.startShieldPercent = 0.10; t.basicMaxHpDamage = 0.03; }
+            if (Tier(affinity, GrowthPath.Bastion) >= 2) { t.startShieldPercent = 0.10; t.basicMaxHpDamage = 0.07; } // round 10: 0.03 left Bastion bosses at 100–118 s of 120
             if (Tier(affinity, GrowthPath.Bastion) >= 3) t.reflectPercent = 0.20;
 
             if (Tier(affinity, GrowthPath.Tempest) >= 2) t.dodgeBonus = 0.08;

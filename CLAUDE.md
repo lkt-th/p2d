@@ -78,5 +78,5 @@ Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules
 
 - Balance watch items: Arcane still clears fastest; Bastion boss fights take 80–107 s of a 120 s limit;
   Magma 4-piece (40% burst, 1 s cooldown) still leads the set builds on Tempest (75% auto boss wins vs Storm 54%); see balance-report.md.
-- Weekly spire affixes are built but off (`SpireAffixes.Live`): theme ATK +20% and Thick hide make the B2 boss and the B4 Bastion boss much harder (balance-report.md "Affix"). Tune and switch on?
+- Weekly spire affixes are built but off (`SpireAffixes.Live`). Round 7 (theme ATK +10%, Thick hide DEF +15%, Rush 75 s) fixed Bastion; Veil of mist (crit −10) still hits Fury hard (B2 boss 46% → 3–7%). Soften Mist and switch on? (balance-report.md "Affix")
 - PvP or not; always-online or partly offline.

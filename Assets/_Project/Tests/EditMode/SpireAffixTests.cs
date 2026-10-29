@@ -41,10 +41,10 @@ namespace P2D.Domain.Tests
             var setup = GameActions.BuildSpireBattle(save, 5, Element.Fire, 1, new SpireTuning());
             var loadout = GameActions.ToLoadout(save);
             SpireAffixes.Apply(setup, loadout, new[] { SpireAffix.ThemeSurge, SpireAffix.Rush, SpireAffix.ThickHide }, 5);
-            Assert.AreEqual(plain.enemies[0].attack * 1.2, setup.enemies[0].attack, 1e-6);
-            Assert.AreEqual(plain.enemies[0].defense * 1.3, setup.enemies[0].defense, 1e-6);
+            Assert.AreEqual(plain.enemies[0].attack * (1 + SpireAffixes.ThemeAttackBonus), setup.enemies[0].attack, 1e-6);
+            Assert.AreEqual(plain.enemies[0].defense * (1 + SpireAffixes.ThickHideDefense), setup.enemies[0].defense, 1e-6);
             Assert.Greater(setup.enemies[0].attackIntervalSeconds, plain.enemies[0].attackIntervalSeconds);
-            Assert.AreEqual(60, setup.timeLimitSeconds);
+            Assert.AreEqual(SpireAffixes.RushSeconds, setup.timeLimitSeconds);
 
             var boss = GameActions.BuildSpireBattle(save, 30, Element.Fire, 1, new SpireTuning());
             double bossLimit = boss.timeLimitSeconds;

@@ -29,6 +29,12 @@ namespace P2D.Presentation.Screens
                 + "\n" + Loc.F("Bracket B{0}   ·   resets in {1}", save.spire.bracket, Fmt.Duration(WeeklyCalendar.NextResetUtc(now) - now))
                 + "\n" + Loc.F("Tip: a {0} heart core has the edge", Loc.Enum(SpireThemes.Counter(theme.element))), 0.02f, 1, 30);
 
+            var featured = FeaturedRiders.ForWeek(save.spire.weekIndex);
+            var feature = UiKit.Row(list, 90, FeaturedRiders.RidingFeatured(save) ? new Color(0.13f, 0.2f, 0.13f) : UiKit.Surface);
+            Cell(feature, Loc.F("Featured riders: {0}, {1}", Loc.Rider(featured[0]), Loc.Rider(featured[1])) + "\n<color=#a3a8ba>"
+                + (FeaturedRiders.RidingFeatured(save) ? Loc.T("Riding one: +20% spire materials") : Loc.T("Ride one for +20% spire materials"))
+                + "</color>", 0.02f, 1, 26);
+
             var progress = UiKit.Row(list, 60);
             var barCell = UiKit.Slice(UiKit.Fill(progress, "Bar"), 0, 0.75f, 14);
             UiKit.Bar(barCell, UiKit.SurfaceAlt, UiKit.Accent, save.spire.highestFloor / (float)SpireRules.TopFloor);

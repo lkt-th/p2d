@@ -127,6 +127,33 @@ namespace P2D.Domain.Tests
         }
 
         [Test]
+        public void FeaturedRiders_RotateWeekly_AndBoostSpireMaterials()
+        {
+            var a = FeaturedRiders.ForWeek(40);
+            Assert.AreEqual(2, a.Length);
+            Assert.AreNotEqual(a[0], a[1]);
+            foreach (var id in a) Assert.GreaterOrEqual(RiderCatalog.Find(id).rank, RiderRank.SR);
+            CollectionAssert.AreNotEqual(a, FeaturedRiders.ForWeek(41), "a new pair each week");
+
+            var save = NewGame();
+            var featured = FeaturedRiders.ForWeek(save.spire.weekIndex)[0];
+            var plain = SpireRules.FirstClearRewards(5, save.spire.bracket);
+            Assert.AreEqual(plain.gold, FeaturedRiders.Boost(save, plain).gold, "tim is not featured");
+
+            save.riders.Add(new RiderState { riderId = featured, star = 1 });
+            Assert.IsTrue(GameActions.SetMainRider(save, featured).ok);
+            var boosted = FeaturedRiders.Boost(save, plain);
+            Assert.AreEqual((long)System.Math.Floor(plain.gold * 1.2), boosted.gold);
+            Assert.AreEqual(plain.pactSigils, boosted.pactSigils, "sigils are not boosted");
+
+            save.spire.highestFloor = 4;
+            long gold = save.wallet.gold;
+            var reward = GameActions.ApplySpireResult(save, 5, BattleOutcome.Victory, Element.Fire, new SeededRandom(1));
+            Assert.AreEqual(boosted.gold, reward.resources.gold);
+            Assert.AreEqual(gold + boosted.gold, save.wallet.gold);
+        }
+
+        [Test]
         public void Preset_StoresAndRestoresTheLoadout()
         {
             var save = NewGame();

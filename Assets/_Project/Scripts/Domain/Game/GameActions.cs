@@ -409,7 +409,7 @@ namespace P2D.Domain
             if (outcome != BattleOutcome.Victory || floor != NextSpireFloor(save) || !FeatureUnlocks.IsUnlocked(save, Feature.Spire)) return reward;
 
             reward.firstClear = true;
-            reward.resources = SpireRules.FirstClearRewards(floor, save.spire.bracket);
+            reward.resources = FeaturedRiders.Boost(save, SpireRules.FirstClearRewards(floor, save.spire.bracket));
             var w = save.wallet;
             w.gold += reward.resources.gold;
             w.forgeStones += reward.resources.forgeStones;

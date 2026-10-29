@@ -70,7 +70,7 @@ namespace P2D.Domain
             if (save.spire.torches <= 0) { result.message = Loc.T("No soul torches left (3 more tomorrow)"); return result; }
 
             save.spire.torches--;
-            var full = SpireRules.FirstClearRewards(floor, save.spire.bracket);
+            var full = FeaturedRiders.Boost(save, SpireRules.FirstClearRewards(floor, save.spire.bracket));
             result.resources = new FloorRewards
             {
                 gold = (long)Math.Floor(full.gold * SweepShare),

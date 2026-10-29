@@ -34,15 +34,24 @@ namespace P2D.Presentation.Screens
             var riderRow = UiKit.Row(list, 90, UiKit.Surface);
             Cell(riderRow, "Riding: <b>" + d.mainRiderId + "</b>  " + (riderProfile != null ? riderProfile.rank.ToString() : "")
                 + "  " + (rider != null ? Fmt.Stars(rider.star) : ""), 0.02f, 0.7f);
-            CellButton(riderRow, "RIDERS", 0.72f, 1, () => Menu.Show(ScreenId.Riders));
+            CellButton(riderRow, "RIDERS", 0.72f, 1, () => Menu.Show(ScreenId.Riders), FeatureUnlocks.IsUnlocked(Save, Feature.Riders));
 
             var now = ServerClock.UtcNow;
             var theme = SpireThemes.ForTime(now);
+            var story = UiKit.Row(list, 120, UiKit.Surface);
+            int nextStage = StoryActions.NextStage(Save);
+            Cell(story, nextStage > 0
+                ? "STORY · next stage " + StoryActions.Label(nextStage) + "  " + StoryActions.Chapter(StoryActions.ChapterOf(nextStage)).name
+                : "STORY · every chapter cleared", 0.02f, 0.7f, 30);
+            CellButton(story, "PLAY", 0.72f, 1, () => Menu.Show(ScreenId.Story), true, nextStage > 0 && !FeatureUnlocks.IsUnlocked(Save, Feature.Spire) ? UiKit.Accent : UiKit.SurfaceAlt);
+
             var spire = UiKit.Row(list, 200, UiKit.Surface);
             Cell(spire, "WEEKLY SPIRE · " + theme.name + "\nBest floor " + Save.spire.highestFloor + " / " + SpireRules.TopFloor
                 + "   ·   Torches " + Save.spire.torches + " / " + SpireRules.MaxTorches
                 + "\nResets in " + Fmt.Duration(WeeklyCalendar.NextResetUtc(now) - now), 0.02f, 0.7f, 30);
-            CellButton(spire, "ENTER", 0.72f, 1, () => Menu.Show(ScreenId.Spire), true, UiKit.Accent);
+            bool spireOpen = FeatureUnlocks.IsUnlocked(Save, Feature.Spire);
+            CellButton(spire, spireOpen ? "ENTER" : "LOCKED\n" + StoryActions.Label(FeatureUnlocks.UnlockStage(Feature.Spire)), 0.72f, 1,
+                () => Menu.Show(ScreenId.Spire), spireOpen, spireOpen ? UiKit.Accent : UiKit.SurfaceAlt);
 
             var upgrade = UiKit.Row(list, 90, UiKit.Surface);
             Cell(upgrade, "Next goal: " + NextGoal(), 0.02f, 0.7f);

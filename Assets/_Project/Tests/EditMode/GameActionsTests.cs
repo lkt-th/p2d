@@ -10,6 +10,7 @@ namespace P2D.Domain.Tests
         static PlayerSave NewGame()
         {
             var save = PlayerSave.CreateNew("p", "Ignis", Now, "tim");
+            save.story.cleared = StoryActions.TotalStages; // every feature open
             GameActions.EnsureStarterKit(save, new SeededRandom(1));
             return save;
         }

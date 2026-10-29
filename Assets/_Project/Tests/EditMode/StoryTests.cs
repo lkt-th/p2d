@@ -99,6 +99,50 @@ namespace P2D.Domain.Tests
         }
 
         [Test]
+        public void Features_OpenWithStoryStages()
+        {
+            var save = Starter();
+            var random = new SeededRandom(3);
+            var heart = save.dragon.equipped[(int)EquipSlot.HeartCore];
+            Assert.IsFalse(GameActions.Enhance(save, heart, random).ok, "enhance is locked at the start");
+            Assert.AreEqual(0, GameActions.Summon(save, 10, random).Count, "summon is locked at the start");
+            EncounterKind kind;
+            Assert.IsFalse(HuntActions.BeginRun(save, new DateTime(2026, 10, 30, 3, 0, 0, DateTimeKind.Utc), random, out kind));
+            Assert.IsFalse(GameActions.ApplySpireResult(save, 1, BattleOutcome.Victory, Element.Fire, random).firstClear);
+
+            save.story.cleared = 5;
+            var opened = StoryActions.ApplyResult(save, 6, BattleOutcome.Victory, random).unlocked;
+            CollectionAssert.AreEqual(new[] { Feature.Enhance }, opened);
+            Assert.IsTrue(GameActions.Enhance(save, heart, random).ok);
+
+            save.story.cleared = 9;
+            CollectionAssert.AreEquivalent(new[] { Feature.Riders, Feature.Hunt },
+                StoryActions.ApplyResult(save, 10, BattleOutcome.Victory, random).unlocked);
+            Assert.IsFalse(FeatureUnlocks.IsUnlocked(save, Feature.Spire));
+            save.story.cleared = 15;
+            Assert.IsTrue(FeatureUnlocks.IsUnlocked(save, Feature.Spire));
+            Assert.IsFalse(FeatureUnlocks.IsUnlocked(save, Feature.Workshop));
+            Assert.AreEqual("Clear story 2-10", FeatureUnlocks.Hint(Feature.Workshop));
+        }
+
+        [Test]
+        public void Dialogue_PlaysOnce_WithTheDragonName()
+        {
+            var save = Starter();
+            save.dragon.name = "Pyra";
+            var lines = StoryScript.Before(1, save.dragon.name);
+            Assert.Greater(lines.Length, 0);
+            Assert.IsTrue(Array.Exists(lines, l => l.text.Contains("Pyra")));
+            Assert.IsFalse(Array.Exists(lines, l => l.text.Contains(StoryScript.DragonToken)));
+            Assert.IsTrue(StoryScript.ShouldPlay(save, 1));
+            StoryScript.MarkSeen(save, 1);
+            Assert.IsFalse(StoryScript.ShouldPlay(save, 1), "a retry skips the scene");
+            Assert.IsFalse(StoryScript.ShouldPlay(save, 2), "stage 1-2 has no scene");
+            foreach (int boss in new[] { 10, 20, 30 })
+                Assert.Greater(StoryScript.Before(boss, "x").Length, 0, "every chapter boss has a scene");
+        }
+
+        [Test]
         public void StarterDragon_ClearsTheFirstStages_ButNotTheChapterBoss()
         {
             var save = Starter(); // Lv 10, three common items

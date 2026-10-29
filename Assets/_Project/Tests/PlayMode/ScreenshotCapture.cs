@@ -60,6 +60,7 @@ namespace P2D.PlayMode.Tests
             save.wallet.soulShards = 180;
             save.wallet.pactSigils = 30;
             save.spire.highestFloor = 7;
+            save.story.cleared = 20; // every feature open, chapter 3 next
             save.riders.Add(new P2D.Domain.RiderState { riderId = "kyren", star = 4, copies = 2 });
 
             foreach (ScreenId id in System.Enum.GetValues(typeof(ScreenId)))
@@ -69,6 +70,19 @@ namespace P2D.PlayMode.Tests
                 yield return null;
                 Capture("menu-" + id.ToString().ToLowerInvariant());
             }
+
+            // A fresh game: locked features and the opening scene of 1-1.
+            save.story.cleared = 0;
+            menu.Show(ScreenId.Spire);
+            yield return null;
+            Capture("locked-spire");
+            menu.Show(ScreenId.Story);
+            yield return null;
+            foreach (var b in Object.FindObjectsByType<UnityEngine.UI.Button>(FindObjectsSortMode.None))
+                if (b.gameObject.activeInHierarchy && b.GetComponentInChildren<UnityEngine.UI.Text>().text.StartsWith("FIGHT STAGE")) b.onClick.Invoke();
+            yield return null;
+            yield return null;
+            Capture("story-dialogue");
         }
 
         [UnityTest]

@@ -24,6 +24,7 @@ namespace P2D.Presentation.Screens
             if (zone == 0 || !HuntActions.IsZoneOpen(save, zone)) zone = Mathf.Min(save.dragon.stage, HuntActions.Zones.Length);
 
             AdventureTabs(list, ScreenId.Hunt);
+            if (LockedCard(list, Feature.Hunt)) return;
 
             var zones = UiKit.Row(list, 110);
             for (int i = 0; i < HuntActions.Zones.Length; i++)

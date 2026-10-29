@@ -16,6 +16,7 @@ namespace P2D.Presentation.Screens
         {
             UiKit.Clear(list);
             var save = Save;
+            if (LockedCard(list, Feature.Riders)) return;
             var seals = save.wallet.soulSeals;
             var info = UiKit.Row(list, 90, UiKit.Surface);
             Cell(info, "Soul seals  R " + seals[0] + " · SR " + seals[1] + " · SSR " + seals[2] + " · UR " + seals[3]

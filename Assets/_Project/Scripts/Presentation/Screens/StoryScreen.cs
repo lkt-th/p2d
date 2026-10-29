@@ -4,10 +4,15 @@ using UnityEngine;
 
 namespace P2D.Presentation.Screens
 {
-    /// <summary>Story mode: the current chapter's 10 stages, a preview of the next one and the fight button.</summary>
+    /// <summary>
+    /// Story mode: the current chapter's 10 stages, a preview of the next one and the fight button.
+    /// A stage with an opening scene plays it (NEXT / SKIP) the first time before the battle starts.
+    /// </summary>
     public sealed class StoryScreen : GameScreen
     {
         RectTransform list;
+        int talkingStage;
+        int line;
 
         protected override void Build() => list = UiKit.ScrollList(Root);
 
@@ -40,6 +45,12 @@ namespace P2D.Presentation.Screens
                 UiKit.Label(cell, label, 30, TextAnchor.MiddleCenter);
             }
 
+            if (talkingStage == next && next > 0)
+            {
+                Scene(save, next);
+                return;
+            }
+
             if (next == 0)
             {
                 Cell(UiKit.Row(list, 100, UiKit.Surface), "Every chapter is cleared. More chapters are on the way.", 0.02f, 1);
@@ -64,7 +75,45 @@ namespace P2D.Presentation.Screens
                 + (r.riderId.Length > 0 ? " · rider " + r.riderId : ""), 0.02f, 1, 28);
 
             var go = UiKit.Row(list, 150);
-            CellButton(go, "FIGHT STAGE " + StoryActions.Label(next), 0.1f, 0.9f, () => Menu.StartStoryBattle(next), true, UiKit.Accent, 40);
+            CellButton(go, "FIGHT STAGE " + StoryActions.Label(next), 0.1f, 0.9f, () => Fight(next), true, UiKit.Accent, 40);
+        }
+
+        void Fight(int index)
+        {
+            if (StoryScript.ShouldPlay(Save, index))
+            {
+                talkingStage = index;
+                line = 0;
+                Refresh();
+                return;
+            }
+            Menu.StartStoryBattle(index);
+        }
+
+        void Scene(PlayerSave save, int index)
+        {
+            var lines = StoryScript.Before(index, save.dragon.name);
+            var current = lines[Mathf.Clamp(line, 0, lines.Length - 1)];
+            bool last = line >= lines.Length - 1;
+
+            Header(list, "Stage " + StoryActions.Label(index) + "  ·  " + (line + 1) + " / " + lines.Length);
+            var box = UiKit.Row(list, 300, new Color(0.13f, 0.11f, 0.17f));
+            Cell(box, "<b><color=#F08C4B>" + current.speaker + "</color></b>\n" + current.text, 0.03f, 0.97f, 32);
+
+            var buttons = UiKit.Row(list, 130);
+            CellButton(buttons, "SKIP", 0, 0.3f, () => EndScene(save, index), true, UiKit.SurfaceAlt);
+            CellButton(buttons, last ? "FIGHT!" : "NEXT", 0.35f, 1, () =>
+            {
+                if (last) EndScene(save, index);
+                else { line++; Refresh(); }
+            }, true, UiKit.Accent, 36);
+        }
+
+        void EndScene(PlayerSave save, int index)
+        {
+            StoryScript.MarkSeen(save, index);
+            talkingStage = 0;
+            Menu.StartStoryBattle(index); // saves before loading the battle scene
         }
     }
 }

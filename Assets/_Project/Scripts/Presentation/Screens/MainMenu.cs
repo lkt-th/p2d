@@ -22,7 +22,7 @@ namespace P2D.Presentation.Screens
     {
         // Bottom bar order from the mockup; Story and Hunt share ADVENTURE with the spire, Summon opens from RIDERS.
         static readonly string[] NavLabels = { "DRAGON", "RIDERS", "NEST", "ADVENTURE", "SHOP" };
-        static readonly ScreenId[] NavTargets = { ScreenId.Dragon, ScreenId.Riders, ScreenId.Nest, ScreenId.Spire, ScreenId.Shop };
+        static readonly ScreenId[] NavTargets = { ScreenId.Dragon, ScreenId.Riders, ScreenId.Nest, ScreenId.Story, ScreenId.Shop };
 
         /// <summary>Where to land when the menu reloads after a battle.</summary>
         static ScreenId returnScreen = ScreenId.Spire;
@@ -93,7 +93,7 @@ namespace P2D.Presentation.Screens
             switch (id)
             {
                 case ScreenId.Hunt:
-                case ScreenId.Story: return ScreenId.Spire;
+                case ScreenId.Spire: return ScreenId.Story;
                 case ScreenId.Summon: return ScreenId.Riders;
                 default: return id;
             }
@@ -159,6 +159,7 @@ namespace P2D.Presentation.Screens
         public void StartStoryBattle(int index)
         {
             var setup = StoryActions.BuildBattle(Save, index, Environment.TickCount, tuning);
+            SaveManager.Instance.MarkDirty();
             SaveManager.Instance.SaveNow();
             returnScreen = ScreenId.Story;
             var chapter = StoryActions.Chapter(StoryActions.ChapterOf(index));
@@ -177,7 +178,8 @@ namespace P2D.Presentation.Screens
                         ? "Stage " + StoryActions.Label(index) + " cleared! +" + Fmt.Num(reward.gold) + " gold, +" + reward.essence + " essence"
                           + (reward.gear != null ? ", new " + reward.gear.rarity + " " + reward.gear.slot : "")
                           + (reward.riderId.Length > 0 ? ", rider " + reward.riderId + (reward.riderIsNew ? " joins you" : " (copy)") : "")
-                        : "Stage " + StoryActions.Label(index) + ": " + outcome;
+                          + (reward.unlocked.Count > 0 ? "\nUnlocked: " + string.Join(", ", reward.unlocked.ConvertAll(FeatureUnlocks.Name).ToArray()) : "")
+                        :"Stage " + StoryActions.Label(index) + ": " + outcome;
                 },
             };
             SceneManager.LoadScene(BattleHandoff.BattleScene);
@@ -329,6 +331,17 @@ namespace P2D.Presentation.Screens
                 active == ScreenId.Spire ? UiKit.Accent : UiKit.SurfaceAlt);
             CellButton(row, "HUNTING", 2 / 3f, 1, () => Menu.Show(ScreenId.Hunt), true,
                 active == ScreenId.Hunt ? UiKit.Accent : UiKit.SurfaceAlt);
+        }
+
+        /// <summary>Draws a "locked" card with a shortcut to the story and returns true when the feature is still locked.</summary>
+        protected bool LockedCard(RectTransform list, Feature feature)
+        {
+            if (FeatureUnlocks.IsUnlocked(Save, feature)) return false;
+            var row = UiKit.Row(list, 170, UiKit.Surface);
+            Cell(row, "<b>" + FeatureUnlocks.Name(feature) + "</b> is locked\n<color=#9AA3B5>" + FeatureUnlocks.Hint(feature)
+                + " to open it</color>", 0.02f, 0.7f, 30);
+            CellButton(row, "STORY", 0.72f, 1, () => Menu.Show(ScreenId.Story), true, UiKit.Accent);
+            return true;
         }
 
         protected static void Header(RectTransform list, string text)

@@ -91,6 +91,7 @@ namespace P2D.PlayMode.Tests
         {
             var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
             yield return null;
+            menu.Save.story.cleared = StoryActions.TotalStages;
             menu.Show(ScreenId.Hunt);
             yield return null;
 
@@ -111,6 +112,7 @@ namespace P2D.PlayMode.Tests
             var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
             yield return null;
             var save = menu.Save;
+            save.story.cleared = StoryActions.TotalStages;
             save.wallet.elementCrystals[0] = 50;
             save.wallet.pathEssence[(int)GrowthPath.Arcane] = 50;
             save.wallet.refineStones = 10;
@@ -181,6 +183,11 @@ namespace P2D.PlayMode.Tests
             menu.Show(ScreenId.Story);
             yield return null;
             FindButton("FIGHT STAGE 1-1").onClick.Invoke();
+            yield return null;
+            Assert.IsNotNull(FindButton("NEXT"), "1-1 opens with a scene");
+            FindButton("NEXT").onClick.Invoke();
+            yield return null;
+            FindButton("SKIP").onClick.Invoke();
 
             GreyboxBattleBootstrap battle = null;
             for (int i = 0; i < 120 && battle == null; i++)
@@ -209,6 +216,7 @@ namespace P2D.PlayMode.Tests
             Assert.AreEqual(ScreenId.Story, back.Current);
             Assert.AreEqual(1, SaveManager.Instance.Current.story.cleared);
             Assert.IsNotNull(FindButton("FIGHT STAGE 1-2"));
+            Assert.AreEqual(1, SaveManager.Instance.Current.story.dialogueSeen, "the scene is not shown again");
         }
 
         [UnityTest]
@@ -216,6 +224,7 @@ namespace P2D.PlayMode.Tests
         {
             var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
             yield return null;
+            menu.Save.story.cleared = StoryActions.TotalStages;
             menu.Show(ScreenId.Hunt);
             yield return null;
             FindButton("FIGHT").onClick.Invoke();
@@ -252,6 +261,7 @@ namespace P2D.PlayMode.Tests
         {
             var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
             yield return null;
+            menu.Save.story.cleared = StoryActions.TotalStages;
             menu.StartSpireBattle(1);
 
             GreyboxBattleBootstrap battle = null;

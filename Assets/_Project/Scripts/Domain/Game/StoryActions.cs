@@ -8,6 +8,9 @@ namespace P2D.Domain
     {
         /// <summary>Highest stage cleared, counted across chapters (chapter 2 stage 3 = 13); 0 = none.</summary>
         public int cleared;
+
+        /// <summary>Highest stage whose opening scene was shown, so retries skip it.</summary>
+        public int dialogueSeen;
     }
 
     public enum StoryStageKind { Normal, Guardian, Boss }
@@ -34,6 +37,7 @@ namespace P2D.Domain
         public EquipmentState gear;
         public string riderId = "";
         public bool riderIsNew;
+        public List<Feature> unlocked = new List<Feature>();
     }
 
     /// <summary>
@@ -192,6 +196,7 @@ namespace P2D.Domain
             if (!string.IsNullOrEmpty(reward.riderId)) reward.riderIsNew = GrantRider(save, reward.riderId);
 
             Story(save).cleared = index;
+            reward.unlocked = FeatureUnlocks.OpenedBy(index);
             return reward;
         }
 

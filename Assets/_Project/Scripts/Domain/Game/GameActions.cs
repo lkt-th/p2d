@@ -139,6 +139,7 @@ namespace P2D.Domain
 
         public static ActionResult Enhance(PlayerSave save, string uid, IRandom random)
         {
+            if (!FeatureUnlocks.IsUnlocked(save, Feature.Enhance)) return FeatureUnlocks.Locked(Feature.Enhance);
             var item = save.FindEquipment(uid);
             if (item == null) return ActionResult.Fail("Item not found");
             if (item.enhance >= EquipmentRules.MaxEnhance) return ActionResult.Fail("Already +15");
@@ -171,6 +172,7 @@ namespace P2D.Domain
         /// </summary>
         public static ActionResult Reforge(PlayerSave save, string uid, GrowthPath target)
         {
+            if (!FeatureUnlocks.IsUnlocked(save, Feature.Workshop)) return FeatureUnlocks.Locked(Feature.Workshop);
             var item = save.FindEquipment(uid);
             if (item == null) return ActionResult.Fail("Item not found");
             if (item.path == target) return ActionResult.Fail("Already " + target);
@@ -199,6 +201,7 @@ namespace P2D.Domain
         /// <summary>Refine: rerolls one sub-stat; the others are kept.</summary>
         public static ActionResult Refine(PlayerSave save, string uid, int subIndex, IRandom random)
         {
+            if (!FeatureUnlocks.IsUnlocked(save, Feature.Workshop)) return FeatureUnlocks.Locked(Feature.Workshop);
             var item = save.FindEquipment(uid);
             if (item == null) return ActionResult.Fail("Item not found");
             if (item.subs == null || subIndex < 0 || subIndex >= item.subs.Length) return ActionResult.Fail("No such sub-stat");
@@ -286,6 +289,7 @@ namespace P2D.Domain
 
         public static ActionResult SetMainRider(PlayerSave save, string riderId)
         {
+            if (!FeatureUnlocks.IsUnlocked(save, Feature.Riders)) return FeatureUnlocks.Locked(Feature.Riders);
             if (save.FindRider(riderId) == null) return ActionResult.Fail("Rider not owned");
             for (int i = 0; i < save.dragon.supportRiderIds.Length; i++)
                 if (save.dragon.supportRiderIds[i] == riderId) save.dragon.supportRiderIds[i] = "";
@@ -299,6 +303,7 @@ namespace P2D.Domain
 
         public static ActionResult StarUp(PlayerSave save, string riderId)
         {
+            if (!FeatureUnlocks.IsUnlocked(save, Feature.Riders)) return FeatureUnlocks.Locked(Feature.Riders);
             var state = save.FindRider(riderId);
             var profile = RiderCatalog.Find(riderId);
             if (state == null || profile == null) return ActionResult.Fail("Rider not owned");
@@ -318,6 +323,7 @@ namespace P2D.Domain
         {
             var results = new List<SummonOutcome>();
             if (count != 1 && count != 10) throw new ArgumentException("Summon 1 or 10");
+            if (!FeatureUnlocks.IsUnlocked(save, Feature.Riders)) return results;
             if (save.wallet.pactSigils < count) return results;
             save.wallet.pactSigils -= count;
 
@@ -381,7 +387,7 @@ namespace P2D.Domain
         public static SpireReward ApplySpireResult(PlayerSave save, int floor, BattleOutcome outcome, Element themeElement, IRandom random)
         {
             var reward = new SpireReward();
-            if (outcome != BattleOutcome.Victory || floor != NextSpireFloor(save)) return reward;
+            if (outcome != BattleOutcome.Victory || floor != NextSpireFloor(save) || !FeatureUnlocks.IsUnlocked(save, Feature.Spire)) return reward;
 
             reward.firstClear = true;
             reward.resources = SpireRules.FirstClearRewards(floor, save.spire.bracket);

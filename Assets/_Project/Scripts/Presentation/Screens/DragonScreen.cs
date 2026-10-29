@@ -80,7 +80,7 @@ namespace P2D.Presentation.Screens
                 + "%   Element " + (sheet.Get(StatType.ElementDmg) * 100).ToString("0.#") + "%   Haste " + sheet.Get(StatType.SkillHaste).ToString("0"),
                 0.02f, 1, 30);
 
-            var selected = save.FindEquipment(workshopUid);
+            var selected = FeatureUnlocks.IsUnlocked(save, Feature.Workshop) ? save.FindEquipment(workshopUid) : null;
             if (selected != null) Workshop(save, selected);
 
             var sets = LoadoutCalculator.SetPieces(loadout);
@@ -128,6 +128,9 @@ namespace P2D.Presentation.Screens
             CellButton(grow, evolveText, 0.5f, 1, () => Menu.Commit(GameActions.Evolve(save)),
                 DragonRules.CanEvolve(d.level, d.stage));
 
+            bool enhance = FeatureUnlocks.IsUnlocked(save, Feature.Enhance);
+            bool workshop = FeatureUnlocks.IsUnlocked(save, Feature.Workshop);
+            string workshopHint = FeatureUnlocks.Hint(Feature.Workshop).Replace("Clear story ", "story ");
             Header(list, "Equipped");
             foreach (EquipSlot slot in Enum.GetValues(typeof(EquipSlot)))
             {
@@ -145,10 +148,10 @@ namespace P2D.Presentation.Screens
                 }
                 Cell(row, Fmt.Item(item), 0.02f, 0.56f, 26);
                 string uid = item.uid;
-                CellButton(row, "WORKSHOP", 0.57f, 0.76f, () => { workshopUid = uid; Refresh(); }, true, UiKit.Surface, 24);
+                CellButton(row, workshop ? "WORKSHOP" : "WORKSHOP\n" + workshopHint, 0.57f, 0.76f, () => { workshopUid = uid; Refresh(); }, workshop, UiKit.Surface, 22);
                 bool maxed = item.enhance >= EquipmentRules.MaxEnhance;
-                CellButton(row, maxed ? "MAX" : "ENHANCE\n" + EquipmentRules.StoneCost(item.enhance, item.rarity) + " stones",
-                    0.76f, 1, () => Menu.Commit(GameActions.Enhance(save, uid, Menu.Random)), !maxed);
+                CellButton(row, !enhance ? "ENHANCE\n" + FeatureUnlocks.Hint(Feature.Enhance).Replace("Clear story ", "story ") : maxed ? "MAX" : "ENHANCE\n" + EquipmentRules.StoneCost(item.enhance, item.rarity) + " stones",
+                    0.76f, 1, () => Menu.Commit(GameActions.Enhance(save, uid, Menu.Random)), enhance && !maxed);
             }
 
             var bag = new List<EquipmentState>();
@@ -164,7 +167,7 @@ namespace P2D.Presentation.Screens
                 var row = UiKit.Row(list, 120, UiKit.Surface);
                 Cell(row, Fmt.Item(item), 0.02f, 0.5f, 26);
                 string uid = item.uid;
-                CellButton(row, "WORKSHOP", 0.51f, 0.67f, () => { workshopUid = uid; Refresh(); }, true, UiKit.Surface, 22);
+                CellButton(row, workshop ? "WORKSHOP" : "WORKSHOP\n" + workshopHint, 0.51f, 0.67f, () => { workshopUid = uid; Refresh(); }, workshop, UiKit.Surface, 20);
                 CellButton(row, "EQUIP", 0.67f, 0.83f, () => Menu.Commit(GameActions.Equip(save, uid), "Equipped"),
                     DragonRules.IsSlotUnlocked(item.slot, d.stage));
                 CellButton(row, "SALVAGE", 0.83f, 1, () => Menu.Commit(GameActions.Salvage(save, uid), "Salvaged"), true, UiKit.Surface);

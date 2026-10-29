@@ -21,6 +21,7 @@ namespace P2D.Presentation.Screens
             int next = GameActions.NextSpireFloor(save);
 
             AdventureTabs(list, ScreenId.Spire);
+            if (LockedCard(list, Feature.Spire)) return;
 
             var head = UiKit.Row(list, 200, new Color(0.17f, 0.11f, 0.09f));
             Cell(head, "<b>" + theme.name + "</b>   enemies: " + theme.element + "\nBracket B" + save.spire.bracket

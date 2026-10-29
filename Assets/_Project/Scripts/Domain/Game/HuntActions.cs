@@ -88,6 +88,7 @@ namespace P2D.Domain
         public static bool BeginRun(PlayerSave save, DateTime utcNow, IRandom random, out EncounterKind kind)
         {
             kind = EncounterKind.Normal;
+            if (!FeatureUnlocks.IsUnlocked(save, Feature.Hunt)) return false;
             if (!OfflineProgress.SpendHuntStamina(save.hunt, utcNow)) return false;
             kind = HuntRules.RollEncounter(random, HuntBonus(save));
             return true;

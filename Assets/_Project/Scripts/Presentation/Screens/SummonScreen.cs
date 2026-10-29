@@ -17,6 +17,7 @@ namespace P2D.Presentation.Screens
         {
             UiKit.Clear(list);
             var save = Save;
+            if (LockedCard(list, Feature.Riders)) return;
             var pity = save.summonPity;
 
             var head = UiKit.Row(list, 170, new Color(0.17f, 0.09f, 0.13f));

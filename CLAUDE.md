@@ -21,7 +21,7 @@ weekly dungeon. The user writes in Thai — reply in Thai.
 | `P2D.Services` | `Scripts/Services` | Unity glue: `SaveManager`, `FileSaveStorage`, `JsonUtilitySaveSerializer`, `ServerClock`. |
 | `P2D.Presentation` | `Scripts/Presentation` | `SafeAreaFitter`, `PortraitCanvasScaler`, `BattleRunner`. |
 | `P2D.Editor` | `Scripts/Editor` | Portrait player-settings hook, **P2D → Balance Simulator** window. |
-| `P2D.Domain.Tests` | `Tests/EditMode` | NUnit EditMode tests (150). |
+| `P2D.Domain.Tests` | `Tests/EditMode` | NUnit EditMode tests (152). |
 | `P2D.PlayMode.Tests` | `Tests/PlayMode` | PlayMode tests for the greybox scenes (11). |
 
 Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules`, `RiderCatalog`,
@@ -29,7 +29,7 @@ Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules
 (deterministic, 30 ticks/s, seed + input log replays exactly), `SpireRules`/`WeeklyCalendar`,
 `HuntRules`, `SummonRules`, `PlayerSave`/`SaveService`/`OfflineProgress`, `BalanceSimulator`,
 `GameActions` (every menu action: equip, enhance, reforge, refine, salvage, feed, evolve, ride, star up, summon, spire battle/result),
-`EquipmentGenerator`, `SetCatalog` (2/4-piece sets), `SpireThemes`, `HuntActions` (zones, runs, auto hunt), `ShopActions` (shard shop, stamina refill), `NestActions` (idle income, nest level), `StoryActions` (3 chapters × 10 stages, first-clear rewards).
+`EquipmentGenerator`, `SetCatalog` (2/4-piece sets), `SpireThemes`, `HuntActions` (zones, runs, auto hunt), `ShopActions` (shard shop, stamina refill), `NestActions` (idle income, nest level), `StoryActions` (3 chapters × 10 stages, first-clear rewards), `StoryScript` (scenes before key stages), `FeatureUnlocks` (story stage gates for enhance / riders / hunt / spire / workshop; Domain refuses locked actions, test helpers set `story.cleared = StoryActions.TotalStages`).
 
 ## Conventions
 
@@ -69,7 +69,7 @@ Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules
   (`docs/Unity-Tech.md` §8) before localization.
 - Starter kit (`GameActions.EnsureStarterKit`) sets the dragon to Lv 10 and gives 3 scales as a stand-in for
   story chapters 1–2 (a Lv 1 dragon loses spire floor 1).
-- Not built yet: real art/prefabs, IAP (packs, Dragon Pass), story dialogue and feature unlocks, backend (UGS), cloud save, path visuals, URP (the greybox uses the built-in pipeline).
+- Not built yet: real art/prefabs, IAP (packs, Dragon Pass), egg/hatch tutorial, backend (UGS), cloud save, path visuals, URP (the greybox uses the built-in pipeline).
 
 ## Open decisions (ask the user)
 

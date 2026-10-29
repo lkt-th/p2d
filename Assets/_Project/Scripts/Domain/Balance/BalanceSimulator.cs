@@ -52,7 +52,7 @@ namespace P2D.Domain
     public static class BalanceSimulator
     {
         public static BuildReport RunSpire(BuildPreset build, int bracket, Element themeElement,
-            int firstFloor, int lastFloor, int seedsPerFloor, SpireTuning tuning, double manualDodgeRate = 0)
+            int firstFloor, int lastFloor, int seedsPerFloor, SpireTuning tuning, double manualDodgeRate = 0, SpireAffix[] affixes = null)
         {
             var loadout = BuildFactory.ToLoadout(build);
             var report = new BuildReport
@@ -70,6 +70,7 @@ namespace P2D.Domain
                     int seed = unchecked(floor * 7919 + s * 104729 + StableHash(build.name));
                     var enemies = SpireEnemyFactory.Floor(bracket, floor, themeElement, tuning);
                     var setup = BuildFactory.ToBattle(build, enemies, seed, SpireEnemyFactory.TimeLimit(floor, tuning));
+                    SpireAffixes.Apply(setup, loadout, affixes, floor); // null = the affix-free baseline
                     var sim = new BattleSimulation(setup);
                     RunWithPlayer(sim, manualDodgeRate, new SeededRandom(~seed));
 

@@ -12,7 +12,7 @@ namespace P2D.Editor
     /// <summary>
     /// Runs every default balance scenario from the command line and writes the Markdown report:
     ///   Unity.exe -batchmode -quit -projectPath . -executeMethod P2D.Editor.BalanceSimulatorCli.Run
-    ///             -balanceOut Logs/balance.md [-balanceRuns 100] [-balanceDodge 0.8]
+    ///             -balanceOut Logs/balance.md [-balanceRuns 100] [-balanceDodge 0.8] [-balanceAffixes ThemeSurge,Rush,Mist]
     /// </summary>
     public static class BalanceSimulatorCli
     {
@@ -21,6 +21,7 @@ namespace P2D.Editor
             string output = Arg("-balanceOut", "Logs/BalanceReports/balance-cli.md");
             int runs = int.Parse(Arg("-balanceRuns", "100"), CultureInfo.InvariantCulture);
             double dodge = double.Parse(Arg("-balanceDodge", "0.8"), CultureInfo.InvariantCulture);
+            var affixes = ParseAffixes(Arg("-balanceAffixes", "")); // empty = the affix-free baseline
 
             var started = DateTime.Now;
             var tuning = new SpireTuning();
@@ -29,8 +30,8 @@ namespace P2D.Editor
             {
                 var reports = new List<BuildReport>();
                 foreach (var build in scenario.builds)
-                    reports.Add(BalanceSimulator.RunSpire(build, scenario.bracket, scenario.themeElement, 1, 30, runs, tuning, dodge));
-                md.AppendLine("### " + scenario.title);
+                    reports.Add(BalanceSimulator.RunSpire(build, scenario.bracket, scenario.themeElement, 1, 30, runs, tuning, dodge, affixes));
+                md.AppendLine("### " + scenario.title + (affixes != null ? " · affixes " + string.Join(", ", affixes) : ""));
                 md.AppendLine(BalanceSimulator.ToMarkdown(reports, scenario.bracket, scenario.themeElement, runs, dodge));
             }
 
@@ -38,6 +39,14 @@ namespace P2D.Editor
             File.WriteAllText(output, md.ToString(), new UTF8Encoding(false));
             Debug.Log("[P2D] Balance report written to " + output + " in " + (DateTime.Now - started).TotalSeconds.ToString("0.0") + " s");
             if (Application.isBatchMode) EditorApplication.Exit(0);
+        }
+
+        static SpireAffix[] ParseAffixes(string list)
+        {
+            if (string.IsNullOrEmpty(list)) return null;
+            var result = new List<SpireAffix>();
+            foreach (var name in list.Split(',')) result.Add((SpireAffix)Enum.Parse(typeof(SpireAffix), name.Trim()));
+            return result.ToArray();
         }
 
         static string Arg(string name, string fallback)

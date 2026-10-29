@@ -399,6 +399,7 @@ namespace P2D.Domain
             };
             setup.skills.AddRange(SkillLoadoutRules.Resolve(save.dragon.skillIds));
             setup.enemies.AddRange(SpireEnemyFactory.Floor(save.spire.bracket, floor, themeElement, tuning));
+            SpireAffixes.Apply(setup, loadout, SpireAffixes.Current(save), floor);
             return setup;
         }
 
@@ -413,7 +414,8 @@ namespace P2D.Domain
 
             reward.firstClear = true;
             MissionActions.Record(save, MissionEvent.SpireClear, 1);
-            reward.resources = FeaturedRiders.Boost(save, SpireRules.FirstClearRewards(floor, save.spire.bracket));
+            reward.resources = SpireAffixes.Boost(SpireAffixes.Current(save), floor,
+                FeaturedRiders.Boost(save, SpireRules.FirstClearRewards(floor, save.spire.bracket)));
             var w = save.wallet;
             w.gold += reward.resources.gold;
             w.forgeStones += reward.resources.forgeStones;

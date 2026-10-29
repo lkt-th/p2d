@@ -29,6 +29,17 @@ namespace P2D.Presentation.Screens
                 + "\n" + Loc.F("Bracket B{0}   ·   resets in {1}", save.spire.bracket, Fmt.Duration(WeeklyCalendar.NextResetUtc(now) - now))
                 + "\n" + Loc.F("Tip: a {0} heart core has the edge", Loc.Enum(SpireThemes.Counter(theme.element))), 0.02f, 1, 30);
 
+            var affixes = SpireAffixes.Current(save);
+            if (affixes != null)
+            {
+                var affixRow = UiKit.Row(list, 40 + 40 * affixes.Length, UiKit.Surface);
+                var lines = new List<string>();
+                foreach (var a in affixes)
+                    lines.Add((SpireAffixes.IsPositive(a) ? "<color=#6cc27a>" : a == SpireAffix.ThemeSurge ? "<color=#e9c46a>" : "<color=#e5534b>")
+                        + SpireAffixes.Name(a) + "</color>  " + SpireAffixes.Describe(a));
+                Cell(affixRow, string.Join("\n", lines.ToArray()), 0.02f, 1, 26);
+            }
+
             var featured = FeaturedRiders.ForWeek(save.spire.weekIndex);
             var feature = UiKit.Row(list, 90, FeaturedRiders.RidingFeatured(save) ? new Color(0.13f, 0.2f, 0.13f) : UiKit.Surface);
             Cell(feature, Loc.F("Featured riders: {0}, {1}", Loc.Rider(featured[0]), Loc.Rider(featured[1])) + "\n<color=#a3a8ba>"

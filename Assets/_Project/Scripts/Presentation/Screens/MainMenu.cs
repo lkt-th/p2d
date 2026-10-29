@@ -11,7 +11,7 @@ using UnityEngine.UI;
 
 namespace P2D.Presentation.Screens
 {
-    public enum ScreenId { Nest, Dragon, Riders, Spire, Summon, Hunt, Shop, Story }
+    public enum ScreenId { Nest, Dragon, Riders, Spire, Summon, Hunt, Shop, Story, Hatch }
 
     /// <summary>
     /// The menu scene: loads the save, builds the portrait shell (resource bar, content area,
@@ -31,6 +31,8 @@ namespace P2D.Presentation.Screens
         readonly List<Image> navImages = new List<Image>();
         readonly SpireTuning tuning = new SpireTuning();
         Text resourceText;
+        GameObject resourceBar;
+        GameObject navBar;
         Text toastText;
         float toastUntil;
         ScreenId current;
@@ -64,9 +66,10 @@ namespace P2D.Presentation.Screens
             AddScreen(ScreenId.Hunt, new HuntScreen());
             AddScreen(ScreenId.Shop, new ShopScreen());
             AddScreen(ScreenId.Story, new StoryScreen());
+            AddScreen(ScreenId.Hatch, new HatchScreen());
 
             bool returningFromBattle = !string.IsNullOrEmpty(BattleHandoff.LastMessage);
-            Show(returningFromBattle ? returnScreen : ScreenId.Nest);
+            Show(!Save.dragon.hatched ? ScreenId.Hatch : returningFromBattle ? returnScreen : ScreenId.Nest);
             if (returningFromBattle)
             {
                 Toast(BattleHandoff.LastMessage, 5);
@@ -83,6 +86,10 @@ namespace P2D.Presentation.Screens
         public void Show(ScreenId id)
         {
             current = id;
+            // The egg screen stands alone: no resources or tabs until the dragon has a name.
+            bool hatched = Save == null || Save.dragon.hatched;
+            if (resourceBar != null) resourceBar.SetActive(hatched);
+            if (navBar != null) navBar.SetActive(hatched);
             foreach (var pair in screens) pair.Value.SetVisible(pair.Key == id);
             for (int i = 0; i < navImages.Count; i++) navImages[i].color = NavTargets[i] == NavTab(id) ? UiKit.Accent : UiKit.Surface;
             RefreshResources();
@@ -252,12 +259,14 @@ namespace P2D.Presentation.Screens
 
             var top = UiKit.Rect(safe, "Resources", new Vector2(0, 1), Vector2.one, new Vector2(0, -110), Vector2.zero);
             top.gameObject.AddComponent<Image>().color = UiKit.Surface;
+            resourceBar = top.gameObject;
             resourceText = UiKit.Label(UiKit.Slice(UiKit.Fill(top, "Text"), 0, 1, 24), "", 28);
 
             content = UiKit.Rect(safe, "Content", Vector2.zero, Vector2.one, new Vector2(0, 150), new Vector2(0, -110));
 
             var nav = UiKit.Rect(safe, "Navigation", Vector2.zero, new Vector2(1, 0), Vector2.zero, new Vector2(0, 150));
             nav.gameObject.AddComponent<Image>().color = UiKit.Surface;
+            navBar = nav.gameObject;
             for (int i = 0; i < NavLabels.Length; i++)
             {
                 var id = NavTargets[i];

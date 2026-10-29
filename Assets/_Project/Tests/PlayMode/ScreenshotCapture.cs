@@ -55,8 +55,22 @@ namespace P2D.PlayMode.Tests
         {
             var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
             yield return null;
-            // A little progress so lists are not empty.
+            // First launch: the egg, then the name field once it cracks.
             var save = menu.Save;
+            yield return null;
+            Capture("hatch-egg");
+            foreach (var b in Object.FindObjectsByType<UnityEngine.UI.Button>(FindObjectsSortMode.None))
+                if (b.transform.parent != null && b.transform.parent.name == "Egg")
+                {
+                    for (int i = 0; i < P2D.Domain.GameActions.HatchTaps; i++) b.onClick.Invoke();
+                    break;
+                }
+            yield return null;
+            yield return null;
+            Capture("hatch-name");
+            save.dragon.hatched = true;
+
+            // A little progress so lists are not empty.
             save.wallet.soulShards = 180;
             save.wallet.pactSigils = 30;
             save.spire.highestFloor = 7;

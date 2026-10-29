@@ -65,6 +65,25 @@ namespace P2D.Domain
             AutoSkills(save);
         }
 
+        // ---- hatching ------------------------------------------------------------------
+
+        /// <summary>Taps on the egg before it cracks open (the "bonding" moment, GDD §11).</summary>
+        public const int HatchTaps = 3;
+        public const int MaxNameLength = 12;
+
+        /// <summary>Opens the egg and names the dragon. The name is trimmed; empty keeps the default.</summary>
+        public static ActionResult Hatch(PlayerSave save, string name)
+        {
+            if (save.dragon.hatched) return ActionResult.Fail("The egg has already hatched");
+            name = (name ?? "").Trim();
+            if (name.Length > MaxNameLength) return ActionResult.Fail("Names are up to " + MaxNameLength + " characters");
+            foreach (char c in name)
+                if (char.IsControl(c)) return ActionResult.Fail("That name has a character we can't show");
+            if (name.Length > 0) save.dragon.name = name;
+            save.dragon.hatched = true;
+            return ActionResult.Ok(save.dragon.name + " hatched!");
+        }
+
         static string NewUid(PlayerSave save) => "eq" + (++save.nextItemId).ToString("D5");
 
         // ---- loadout -------------------------------------------------------------------

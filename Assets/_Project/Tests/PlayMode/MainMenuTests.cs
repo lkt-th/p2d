@@ -175,11 +175,45 @@ namespace P2D.PlayMode.Tests
             Assert.IsNull(FindButton("UPGRADE"), "stage 1 caps the nest at Lv 2");
         }
 
+        /// <summary>The egg button: the one inside the "Egg" rect of the hatch screen.</summary>
+        static Button EggButton()
+        {
+            foreach (var b in Object.FindObjectsByType<Button>(FindObjectsSortMode.None))
+                if (b.gameObject.activeInHierarchy && b.transform.parent != null && b.transform.parent.name == "Egg") return b;
+            return null;
+        }
+
+        [UnityTest]
+        public IEnumerator NewGame_HatchesTheEgg_ThenOpensTheStory()
+        {
+            var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
+            yield return null;
+            Assert.AreEqual(ScreenId.Hatch, menu.Current, "a new game starts at the egg");
+            Assert.IsNull(FindButton("ADVENTURE"), "no tabs before hatching");
+
+            for (int i = 0; i < GameActions.HatchTaps; i++)
+            {
+                EggButton().onClick.Invoke();
+                yield return null;
+            }
+            var input = Object.FindAnyObjectByType<InputField>();
+            Assert.IsNotNull(input, "the name field appears once the egg cracks");
+            input.text = "Pyra";
+            FindButton("HATCH").onClick.Invoke();
+            yield return null;
+
+            Assert.IsTrue(menu.Save.dragon.hatched);
+            Assert.AreEqual("Pyra", menu.Save.dragon.name);
+            Assert.AreEqual(ScreenId.Story, menu.Current);
+            Assert.IsNotNull(FindButton("ADVENTURE"));
+        }
+
         [UnityTest]
         public IEnumerator StoryBattle_RoundTrip_ClearsStageOne()
         {
             var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
             yield return null;
+            menu.Save.dragon.hatched = true;
             menu.Show(ScreenId.Story);
             yield return null;
             FindButton("FIGHT STAGE 1-1").onClick.Invoke();
@@ -224,6 +258,7 @@ namespace P2D.PlayMode.Tests
         {
             var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
             yield return null;
+            menu.Save.dragon.hatched = true;
             menu.Save.story.cleared = StoryActions.TotalStages;
             menu.Show(ScreenId.Hunt);
             yield return null;
@@ -261,6 +296,7 @@ namespace P2D.PlayMode.Tests
         {
             var menu = new GameObject("Main Menu").AddComponent<MainMenu>();
             yield return null;
+            menu.Save.dragon.hatched = true;
             menu.Save.story.cleared = StoryActions.TotalStages;
             menu.StartSpireBattle(1);
 

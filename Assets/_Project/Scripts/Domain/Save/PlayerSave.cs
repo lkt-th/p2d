@@ -10,6 +10,9 @@ namespace P2D.Domain
     public sealed class DragonSave
     {
         public string name = "Ignis";
+
+        /// <summary>False until the player taps the egg open and names the dragon (GDD §11 step 1).</summary>
+        public bool hatched;
         public int level = 1;
         public int stage = 1;
         public long exp;

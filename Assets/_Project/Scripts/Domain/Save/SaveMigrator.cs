@@ -10,7 +10,7 @@ namespace P2D.Domain
     /// </summary>
     public sealed class SaveMigrator
     {
-        public const int CurrentVersion = 1;
+        public const int CurrentVersion = 2;
 
         readonly Dictionary<int, Action<PlayerSave>> steps = new Dictionary<int, Action<PlayerSave>>();
         readonly int targetVersion;
@@ -49,6 +49,8 @@ namespace P2D.Domain
             return changed;
         }
 
-        public static SaveMigrator Default() => new SaveMigrator();
+        public static SaveMigrator Default() => new SaveMigrator()
+            // v2 added the egg: saves made before it already have a dragon.
+            .Add(1, save => save.dragon.hatched = true);
     }
 }

@@ -68,11 +68,11 @@ namespace P2D.Domain
         public static ActionResult Collect(PlayerSave save, DateTime utcNow)
         {
             var income = Pending(save, utcNow);
-            if (income.gold <= 0 && income.essence <= 0) return ActionResult.Fail("Nothing to collect yet");
+            if (income.gold <= 0 && income.essence <= 0) return ActionResult.Fail(Loc.T("Nothing to collect yet"));
             save.wallet.gold += income.gold;
             save.wallet.dragonEssence += income.essence;
             save.nest.lastCollectUtcTicks = utcNow.Ticks;
-            return ActionResult.Ok("+" + income.gold + " gold, +" + income.essence + " essence");
+            return ActionResult.Ok(Loc.F("+{0} gold, +{1} essence", income.gold, income.essence));
         }
 
         /// <summary>Upgrading collects first, so the higher rate never applies to time already stored.</summary>
@@ -81,14 +81,14 @@ namespace P2D.Domain
             var nest = Nest(save, utcNow);
             int cap = LevelCap(save.dragon.stage);
             if (nest.level >= cap)
-                return ActionResult.Fail(nest.level >= MaxLevel ? "Nest is max level" : "Evolve the dragon to raise the nest cap (" + cap + ")");
+                return ActionResult.Fail(nest.level >= MaxLevel ? Loc.T("Nest is max level") : Loc.F("Evolve the dragon to raise the nest cap ({0})", cap));
             long cost = UpgradeCost(nest.level);
-            if (save.wallet.gold < cost) return ActionResult.Fail("Need " + cost + " gold");
+            if (save.wallet.gold < cost) return ActionResult.Fail(Loc.F("Need {0} gold", cost));
 
             Collect(save, utcNow);
             save.wallet.gold -= cost;
             nest.level++;
-            return ActionResult.Ok("Nest Lv " + nest.level);
+            return ActionResult.Ok(Loc.F("Nest Lv {0}", nest.level));
         }
     }
 }

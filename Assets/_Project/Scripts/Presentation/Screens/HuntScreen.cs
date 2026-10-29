@@ -32,7 +32,7 @@ namespace P2D.Presentation.Screens
                 int z = i + 1;
                 bool open = HuntActions.IsZoneOpen(save, z);
                 float x0 = i / (float)HuntActions.Zones.Length, x1 = (i + 1) / (float)HuntActions.Zones.Length;
-                CellButton(zones, open ? "ZONE " + z : "Stage " + z, x0, x1, () => { zone = z; Refresh(); }, open,
+                CellButton(zones, open ? Loc.F("ZONE {0}", z) : Loc.F("Stage {0}", z), x0, x1, () => { zone = z; Refresh(); }, open,
                     z == zone ? UiKit.Accent : UiKit.SurfaceAlt, 26);
             }
 
@@ -40,29 +40,29 @@ namespace P2D.Presentation.Screens
             double bonus = HuntActions.HuntBonus(save);
             double rare = HuntRules.RareRate(bonus), epic = HuntRules.EpicRate(bonus);
             var head = UiKit.Row(list, 220, new Color(0.09f, 0.14f, 0.12f));
-            Cell(head, "<b>" + info.name + "</b>   Lv " + info.level + "   enemies: " + info.element
-                + "\nStamina " + save.hunt.stamina + " / " + HuntRules.MaxStamina + "  (" + HuntRules.StaminaCost + " per run, +1 every "
-                + HuntRules.MinutesPerStamina + " min)"
-                + "\nEncounters: normal " + Pct(1 - rare - epic) + " · rare " + Pct(rare) + " · epic " + Pct(epic)
-                + (bonus > 0 ? "   <color=#9fe0c2>(hunter +" + Pct(bonus) + ")</color>" : "")
-                + "\nRares flee after " + HuntRules.RareEscapeSeconds + " s (epic " + HuntRules.EpicEscapeSeconds + " s). Random every run — no guarantee.",
+            Cell(head, "<b>" + Loc.T(info.name) + "</b>   " + Loc.F("Lv {0}", info.level) + "   " + Loc.F("enemies: {0}", Loc.Enum(info.element))
+                + "\n" + Loc.F("Stamina {0} / {1}  ({2} per run, +1 every {3} min)", save.hunt.stamina, HuntRules.MaxStamina, HuntRules.StaminaCost,
+                    HuntRules.MinutesPerStamina)
+                + "\n" + Loc.F("Encounters: normal {0} · rare {1} · epic {2}", Pct(1 - rare - epic), Pct(rare), Pct(epic))
+                + (bonus > 0 ? "   <color=#9fe0c2>" + Loc.F("(hunter +{0})", Pct(bonus)) + "</color>" : "")
+                + "\n" + Loc.F("Rares flee after {0} s (epic {1} s). Random every run — no guarantee.", HuntRules.RareEscapeSeconds, HuntRules.EpicEscapeSeconds),
                 0.02f, 1, 28);
 
             bool canRun = save.hunt.stamina >= HuntRules.StaminaCost;
             var buttons = UiKit.Row(list, 130);
-            CellButton(buttons, "AUTO HUNT x1", 0, 0.34f, () => AutoHunt(1), canRun);
-            CellButton(buttons, "AUTO x5\nstops on rare", 0.34f, 0.67f, () => AutoHunt(5), canRun);
-            CellButton(buttons, "FIGHT\nYOURSELF", 0.67f, 1, FightYourself, canRun, UiKit.Accent);
+            CellButton(buttons, Loc.T("AUTO HUNT x1"), 0, 0.34f, () => AutoHunt(1), canRun);
+            CellButton(buttons, Loc.T("AUTO x5") + "\n" + Loc.T("stops on rare"), 0.34f, 0.67f, () => AutoHunt(5), canRun);
+            CellButton(buttons, Loc.T("FIGHT") + "\n" + Loc.T("YOURSELF"), 0.67f, 1, FightYourself, canRun, UiKit.Accent);
 
             if (!canRun)
             {
                 var refill = UiKit.Row(list, 90, UiKit.Surface);
-                Cell(refill, "Out of stamina. Refill in the shop (crystals, " + ShopActions.StaminaRefillsLeft(save, now) + " left today).", 0.02f, 0.72f, 26);
-                CellButton(refill, "SHOP", 0.74f, 1, () => Menu.Show(ScreenId.Shop));
+                Cell(refill, Loc.F("Out of stamina. Refill in the shop (crystals, {0} left today).", ShopActions.StaminaRefillsLeft(save, now)), 0.02f, 0.72f, 26);
+                CellButton(refill, Loc.T("SHOP"), 0.74f, 1, () => Menu.Show(ScreenId.Shop));
             }
 
             if (lastRuns.Count == 0) return;
-            Header(list, "Last hunt");
+            Header(list, Loc.T("Last hunt"));
             foreach (var run in lastRuns)
             {
                 var row = UiKit.Row(list, 120, run.kind == EncounterKind.Normal ? UiKit.Surface : new Color(0.2f, 0.17f, 0.08f));
@@ -74,8 +74,8 @@ namespace P2D.Presentation.Screens
         {
             lastRuns = HuntActions.AutoHunt(Save, zone, count, ServerClock.UtcNow, Menu.Random);
             bool rare = lastRuns.Exists(r => r.kind != EncounterKind.Normal);
-            Menu.Commit(lastRuns.Count > 0 ? ActionResult.Ok(rare ? "A rare monster appeared!" : "Hunted " + lastRuns.Count + "×")
-                : ActionResult.Fail("Not enough stamina"));
+            Menu.Commit(lastRuns.Count > 0 ? ActionResult.Ok(rare ? Loc.T("A rare monster appeared!") : Loc.F("Hunted {0}×", lastRuns.Count))
+                : ActionResult.Fail(Loc.T("Not enough stamina")));
         }
 
         void FightYourself()
@@ -83,7 +83,7 @@ namespace P2D.Presentation.Screens
             EncounterKind kind;
             if (!HuntActions.BeginRun(Save, ServerClock.UtcNow, Menu.Random, out kind))
             {
-                Menu.Toast("Not enough stamina");
+                Menu.Toast(Loc.T("Not enough stamina"));
                 return;
             }
             Menu.StartHuntBattle(zone, kind);
@@ -96,19 +96,19 @@ namespace P2D.Presentation.Screens
             string head;
             switch (run.kind)
             {
-                case EncounterKind.Rare: head = "<b>RARE · gold lizard</b>"; break;
-                case EncounterKind.Epic: head = "<b>EPIC · shadow dragon</b>"; break;
-                default: head = "Ash wolves"; break;
+                case EncounterKind.Rare: head = "<b>" + Loc.T("RARE · gold lizard") + "</b>"; break;
+                case EncounterKind.Epic: head = "<b>" + Loc.T("EPIC · shadow dragon") + "</b>"; break;
+                default: head = Loc.T("Ash wolves"); break;
             }
-            head += " — " + (run.outcome == BattleOutcome.Victory ? "won" : run.outcome == BattleOutcome.Escaped ? "it fled" : run.outcome.ToString().ToLowerInvariant());
+            head += " — " + (run.outcome == BattleOutcome.Victory ? Loc.T("won") : run.outcome == BattleOutcome.Escaped ? Loc.T("it fled") : Loc.Enum(run.outcome));
             var r = run.rewards;
             string loot = r.gold > 0
-                ? "+" + Fmt.Num(r.gold) + " gold, +" + r.forgeStones + " forge" + (r.dragonEssence > 0 ? ", +" + r.dragonEssence + " essence" : "")
-                  + (r.elementCrystals > 0 ? ", +" + r.elementCrystals + " crystals" : "") + (r.refineStones > 0 ? ", +" + r.refineStones + " refine" : "")
-                : "nothing";
-            if (run.gear != null) loot += ", " + run.gear.rarity + " " + run.gear.slot;
-            if (!string.IsNullOrEmpty(run.bonus)) loot += ", " + run.bonus;
-            if (run.staminaRefunded) loot += " · stamina refunded (Legacy)";
+                ? Loc.F("+{0} gold, +{1} forge", Fmt.Num(r.gold), r.forgeStones) + (r.dragonEssence > 0 ? Loc.F(", +{0} essence", r.dragonEssence) : "")
+                  + (r.elementCrystals > 0 ? Loc.F(", +{0} crystals", r.elementCrystals) : "") + (r.refineStones > 0 ? Loc.F(", +{0} refine", r.refineStones) : "")
+                : Loc.T("nothing");
+            if (run.gear != null) loot += ", " + Loc.Enum(run.gear.rarity) + " " + Loc.Enum(run.gear.slot);
+            if (!string.IsNullOrEmpty(run.bonus)) loot += ", " + Loc.T(run.bonus);
+            if (run.staminaRefunded) loot += " · " + Loc.T("stamina refunded (Legacy)");
             return head + "\n" + loot;
         }
     }

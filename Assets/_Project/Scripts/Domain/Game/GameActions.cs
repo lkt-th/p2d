@@ -74,14 +74,14 @@ namespace P2D.Domain
         /// <summary>Opens the egg and names the dragon. The name is trimmed; empty keeps the default.</summary>
         public static ActionResult Hatch(PlayerSave save, string name)
         {
-            if (save.dragon.hatched) return ActionResult.Fail("The egg has already hatched");
+            if (save.dragon.hatched) return ActionResult.Fail(Loc.T("The egg has already hatched"));
             name = (name ?? "").Trim();
-            if (name.Length > MaxNameLength) return ActionResult.Fail("Names are up to " + MaxNameLength + " characters");
+            if (name.Length > MaxNameLength) return ActionResult.Fail(Loc.F("Names are up to {0} characters", MaxNameLength));
             foreach (char c in name)
-                if (char.IsControl(c)) return ActionResult.Fail("That name has a character we can't show");
+                if (char.IsControl(c)) return ActionResult.Fail(Loc.T("That name has a character we can't show"));
             if (name.Length > 0) save.dragon.name = name;
             save.dragon.hatched = true;
-            return ActionResult.Ok(save.dragon.name + " hatched!");
+            return ActionResult.Ok(Loc.F("{0} hatched!", save.dragon.name));
         }
 
         static string NewUid(PlayerSave save) => "eq" + (++save.nextItemId).ToString("D5");
@@ -117,9 +117,9 @@ namespace P2D.Domain
         public static ActionResult Equip(PlayerSave save, string uid)
         {
             var item = save.FindEquipment(uid);
-            if (item == null) return ActionResult.Fail("Item not found");
+            if (item == null) return ActionResult.Fail(Loc.T("Item not found"));
             if (!DragonRules.IsSlotUnlocked(item.slot, save.dragon.stage))
-                return ActionResult.Fail(item.slot + " unlocks at stage " + DragonRules.UnlockStage(item.slot));
+                return ActionResult.Fail(Loc.F("{0} unlocks at stage {1}", Loc.Enum(item.slot), DragonRules.UnlockStage(item.slot)));
             save.dragon.equipped[(int)item.slot] = uid;
             AutoSkillsIfInvalid(save);
             return ActionResult.Ok();
@@ -160,12 +160,12 @@ namespace P2D.Domain
         {
             if (!FeatureUnlocks.IsUnlocked(save, Feature.Enhance)) return FeatureUnlocks.Locked(Feature.Enhance);
             var item = save.FindEquipment(uid);
-            if (item == null) return ActionResult.Fail("Item not found");
-            if (item.enhance >= EquipmentRules.MaxEnhance) return ActionResult.Fail("Already +15");
+            if (item == null) return ActionResult.Fail(Loc.T("Item not found"));
+            if (item.enhance >= EquipmentRules.MaxEnhance) return ActionResult.Fail(Loc.T("Already +15"));
             int stones = EquipmentRules.StoneCost(item.enhance, item.rarity);
             long gold = EquipmentRules.GoldCost(item.enhance, item.rarity);
-            if (save.wallet.forgeStones < stones) return ActionResult.Fail("Need " + stones + " forge stones");
-            if (save.wallet.gold < gold) return ActionResult.Fail("Need " + gold + " gold");
+            if (save.wallet.forgeStones < stones) return ActionResult.Fail(Loc.F("Need {0} forge stones", stones));
+            if (save.wallet.gold < gold) return ActionResult.Fail(Loc.F("Need {0} gold", gold));
 
             save.wallet.forgeStones -= stones;
             save.wallet.gold -= gold;
@@ -193,13 +193,13 @@ namespace P2D.Domain
         {
             if (!FeatureUnlocks.IsUnlocked(save, Feature.Workshop)) return FeatureUnlocks.Locked(Feature.Workshop);
             var item = save.FindEquipment(uid);
-            if (item == null) return ActionResult.Fail("Item not found");
-            if (item.path == target) return ActionResult.Fail("Already " + target);
+            if (item == null) return ActionResult.Fail(Loc.T("Item not found"));
+            if (item.path == target) return ActionResult.Fail(Loc.F("Already {0}", Loc.Enum(target)));
             int crystals = ReforgeCrystalCost(item);
             int essence = EquipmentRules.ReforgePathEssenceCost(item.rarity);
             var w = save.wallet;
-            if (TotalCrystals(w) < crystals) return ActionResult.Fail("Need " + crystals + " element crystals");
-            if (w.pathEssence[(int)target] < essence) return ActionResult.Fail("Need " + essence + " " + target + " essence");
+            if (TotalCrystals(w) < crystals) return ActionResult.Fail(Loc.F("Need {0} element crystals", crystals));
+            if (w.pathEssence[(int)target] < essence) return ActionResult.Fail(Loc.F("Need {0} {1} essence", essence, Loc.Enum(target)));
 
             int left = crystals;
             while (left > 0)
@@ -214,7 +214,7 @@ namespace P2D.Domain
             w.pathEssence[(int)target] -= essence;
             item.path = target;
             AutoSkillsIfInvalid(save);
-            return ActionResult.Ok("Reforged to " + target + " (+" + item.enhance + " kept)");
+            return ActionResult.Ok(Loc.F("Reforged to {0} (+{1} kept)", Loc.Enum(target), item.enhance));
         }
 
         /// <summary>Refine: rerolls one sub-stat; the others are kept.</summary>
@@ -222,24 +222,24 @@ namespace P2D.Domain
         {
             if (!FeatureUnlocks.IsUnlocked(save, Feature.Workshop)) return FeatureUnlocks.Locked(Feature.Workshop);
             var item = save.FindEquipment(uid);
-            if (item == null) return ActionResult.Fail("Item not found");
-            if (item.subs == null || subIndex < 0 || subIndex >= item.subs.Length) return ActionResult.Fail("No such sub-stat");
+            if (item == null) return ActionResult.Fail(Loc.T("Item not found"));
+            if (item.subs == null || subIndex < 0 || subIndex >= item.subs.Length) return ActionResult.Fail(Loc.T("No such sub-stat"));
             int stones = EquipmentRules.RefineCost(item.rarity);
             long gold = EquipmentRules.RefineGold(item.rarity);
-            if (save.wallet.refineStones < stones) return ActionResult.Fail("Need " + stones + " refine stones");
-            if (save.wallet.gold < gold) return ActionResult.Fail("Need " + gold + " gold");
+            if (save.wallet.refineStones < stones) return ActionResult.Fail(Loc.F("Need {0} refine stones", stones));
+            if (save.wallet.gold < gold) return ActionResult.Fail(Loc.F("Need {0} gold", gold));
 
             save.wallet.refineStones -= stones;
             save.wallet.gold -= gold;
             EquipmentGenerator.RerollSub(random, item, subIndex);
-            return ActionResult.Ok("Refined");
+            return ActionResult.Ok(Loc.T("Refined"));
         }
 
         public static ActionResult Salvage(PlayerSave save, string uid)
         {
             var item = save.FindEquipment(uid);
-            if (item == null) return ActionResult.Fail("Item not found");
-            if (Array.IndexOf(save.dragon.equipped, uid) >= 0) return ActionResult.Fail("Unequip it first");
+            if (item == null) return ActionResult.Fail(Loc.T("Item not found"));
+            if (Array.IndexOf(save.dragon.equipped, uid) >= 0) return ActionResult.Fail(Loc.T("Unequip it first"));
             save.wallet.forgeStones += EquipmentRules.SalvageStones(item.enhance, item.rarity);
             save.wallet.pathEssence[(int)item.path] += EquipmentRules.SalvageEssence(item.rarity);
             save.equipment.Remove(item);
@@ -251,7 +251,7 @@ namespace P2D.Domain
         {
             var d = save.dragon;
             int cap = DragonRules.LevelCap(d.stage);
-            if (d.level >= cap) return ActionResult.Fail(d.stage < DragonRules.MaxStage ? "Level cap — evolve first" : "Max level");
+            if (d.level >= cap) return ActionResult.Fail(d.stage < DragonRules.MaxStage ? Loc.T("Level cap — evolve first") : Loc.T("Max level"));
             int fed = 0;
             while (fed < count && save.wallet.dragonEssence > 0 && save.wallet.gold >= ExpPerEssence * GoldPerExp && d.level < cap)
             {
@@ -265,24 +265,24 @@ namespace P2D.Domain
                     d.level++;
                 }
             }
-            if (fed == 0) return ActionResult.Fail("Need dragon essence and gold");
+            if (fed == 0) return ActionResult.Fail(Loc.T("Need dragon essence and gold"));
             if (d.level >= cap) d.exp = 0;
-            return ActionResult.Ok("Lv " + d.level);
+            return ActionResult.Ok(Loc.F("Lv {0}", d.level));
         }
 
         public static ActionResult Evolve(PlayerSave save)
         {
             var d = save.dragon;
-            if (!DragonRules.CanEvolve(d.level, d.stage)) return ActionResult.Fail("Reach Lv " + DragonRules.LevelCap(d.stage) + " first");
+            if (!DragonRules.CanEvolve(d.level, d.stage)) return ActionResult.Fail(Loc.F("Reach Lv {0} first", DragonRules.LevelCap(d.stage)));
             var cost = DragonRules.EvolveCostFrom(d.stage);
             var w = save.wallet;
             var heart = save.FindEquipment(d.equipped[(int)EquipSlot.HeartCore]);
             int crystalIndex = (int)HeartElement(heart);
-            if (w.ancientScales < cost.ancientScales) return ActionResult.Fail("Need " + cost.ancientScales + " ancient scales");
-            if (w.gold < cost.gold) return ActionResult.Fail("Need " + cost.gold + " gold");
-            if (w.elementCrystals[crystalIndex] < cost.elementCrystals) return ActionResult.Fail("Need " + cost.elementCrystals + " element crystals");
+            if (w.ancientScales < cost.ancientScales) return ActionResult.Fail(Loc.F("Need {0} ancient scales", cost.ancientScales));
+            if (w.gold < cost.gold) return ActionResult.Fail(Loc.F("Need {0} gold", cost.gold));
+            if (w.elementCrystals[crystalIndex] < cost.elementCrystals) return ActionResult.Fail(Loc.F("Need {0} element crystals", cost.elementCrystals));
             if (w.pathEssence[(int)GrowthPath.Fury] + w.pathEssence[1] + w.pathEssence[2] + w.pathEssence[3] < cost.pathEssence)
-                return ActionResult.Fail("Need " + cost.pathEssence + " path essence");
+                return ActionResult.Fail(Loc.F("Need {0} path essence", cost.pathEssence));
 
             w.ancientScales -= cost.ancientScales;
             w.gold -= cost.gold;
@@ -298,7 +298,7 @@ namespace P2D.Domain
             d.level++;
             d.exp = 0;
             AutoSkills(save);
-            return ActionResult.Ok("Stage " + d.stage);
+            return ActionResult.Ok(Loc.F("Stage {0}", d.stage));
         }
 
         /// <summary>The breath element; the Heart Core decides it (Water until heart elements are authored).</summary>
@@ -309,7 +309,7 @@ namespace P2D.Domain
         public static ActionResult SetMainRider(PlayerSave save, string riderId)
         {
             if (!FeatureUnlocks.IsUnlocked(save, Feature.Riders)) return FeatureUnlocks.Locked(Feature.Riders);
-            if (save.FindRider(riderId) == null) return ActionResult.Fail("Rider not owned");
+            if (save.FindRider(riderId) == null) return ActionResult.Fail(Loc.T("Rider not owned"));
             for (int i = 0; i < save.dragon.supportRiderIds.Length; i++)
                 if (save.dragon.supportRiderIds[i] == riderId) save.dragon.supportRiderIds[i] = "";
             save.dragon.mainRiderId = riderId;
@@ -325,13 +325,13 @@ namespace P2D.Domain
             if (!FeatureUnlocks.IsUnlocked(save, Feature.Riders)) return FeatureUnlocks.Locked(Feature.Riders);
             var state = save.FindRider(riderId);
             var profile = RiderCatalog.Find(riderId);
-            if (state == null || profile == null) return ActionResult.Fail("Rider not owned");
-            if (state.star >= RiderRules.MaxStar) return ActionResult.Fail("Already 5★");
+            if (state == null || profile == null) return ActionResult.Fail(Loc.T("Rider not owned"));
+            if (state.star >= RiderRules.MaxStar) return ActionResult.Fail(Loc.T("Already 5★"));
             int seals = save.wallet.soulSeals[(int)profile.rank];
             if (!RiderRules.CanStarUp(state, seals))
-                return ActionResult.Fail("Need " + RiderRules.CopiesNeeded(state.star + 1) + " copies (seals cover half)");
+                return ActionResult.Fail(Loc.F("Need {0} copies (seals cover half)", RiderRules.CopiesNeeded(state.star + 1)));
             long gold = StarUpGold(profile.rank, state.star + 1);
-            if (save.wallet.gold < gold) return ActionResult.Fail("Need " + gold + " gold");
+            if (save.wallet.gold < gold) return ActionResult.Fail(Loc.F("Need {0} gold", gold));
 
             save.wallet.gold -= gold;
             save.wallet.soulSeals[(int)profile.rank] -= RiderRules.StarUp(state, seals);

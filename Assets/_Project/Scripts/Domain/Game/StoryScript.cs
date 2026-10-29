@@ -16,8 +16,7 @@ namespace P2D.Domain
 
     /// <summary>
     /// Short scenes played before story stages (GDD §2 lore: the dragon outlives its riders, so the
-    /// pact passes from rider to rider). "{dragon}" is replaced with the player's dragon name.
-    /// English for now; Thai comes with the localization pass.
+    /// pact passes from rider to rider). "{dragon}" is replaced with the player's dragon name; lines and speakers go through Loc.
     /// </summary>
     public static class StoryScript
     {
@@ -95,7 +94,7 @@ namespace P2D.Domain
             if (!Scenes.TryGetValue(index, out scene)) return None;
             var lines = new DialogueLine[scene.Length];
             for (int i = 0; i < scene.Length; i++)
-                lines[i] = new DialogueLine(scene[i].speaker, scene[i].text.Replace(DragonToken, dragonName));
+                lines[i] = new DialogueLine(Loc.T(scene[i].speaker), Loc.T(scene[i].text).Replace(DragonToken, dragonName));
             return lines;
         }
 

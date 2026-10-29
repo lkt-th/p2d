@@ -97,7 +97,7 @@ namespace P2D.Presentation.Battle
         {
             buildButton.onClick.RemoveAllListeners();
             buildButton.onClick.AddListener(onLeave);
-            buildButton.GetComponentInChildren<Text>().text = "LEAVE";
+            buildButton.GetComponentInChildren<Text>().text = Loc.T("LEAVE");
             retryButton.gameObject.SetActive(false);
             nextButton.gameObject.SetActive(false);
             continueButton.onClick.RemoveAllListeners();
@@ -106,7 +106,7 @@ namespace P2D.Presentation.Battle
         }
 
         public void Bind(BattleRunner battleRunner, BattleSetup battleSetup) =>
-            Bind(battleRunner, battleSetup, "Floor " + bootstrap.Floor + "  ·  " + bootstrap.CurrentBuild.name);
+            Bind(battleRunner, battleSetup, Loc.F("Floor {0}", bootstrap.Floor) + "  ·  " + bootstrap.CurrentBuild.name);
 
         public void Bind(BattleRunner battleRunner, BattleSetup battleSetup, string title)
         {
@@ -220,7 +220,7 @@ namespace P2D.Presentation.Battle
                 Primitive(PrimitiveType.Cube, root, "Horn", new Vector3(0, size * 1.1f, 0), new Vector3(0.2f, 0.5f, 0.2f) * size, color * 0.6f);
 
                 var bar = MakeBar(floatLayer, "Enemy HP " + i, new Vector2(170, 18), new Color(0.15f, 0.05f, 0.05f), new Color(0.9f, 0.25f, 0.2f), out var fill);
-                var label = MakeLabel(bar, "Name", spec.id, 22, TextAnchor.LowerCenter, Color.white);
+                var label = MakeLabel(bar, "Name", Loc.T(spec.id), 22, TextAnchor.LowerCenter, Color.white);
                 label.rectTransform.anchoredPosition = new Vector2(0, 26);
 
                 enemies.Add(new EnemyView { root = root, body = body, baseColor = color, barRoot = bar, barFill = fill, label = label });
@@ -274,11 +274,11 @@ namespace P2D.Presentation.Battle
             {
                 runner.SetSpeed(runner.Speed % 3 + 1);
             }).GetComponentInChildren<Text>();
-            autoText = MakeButton(top, "Auto", "AUTO", new Vector2(1, 0.5f), new Vector2(-260, 0), new Vector2(150, 84), () =>
+            autoText = MakeButton(top, "Auto", Loc.T("AUTO"), new Vector2(1, 0.5f), new Vector2(-260, 0), new Vector2(150, 84), () =>
             {
                 runner.SetAuto(!runner.Simulation.Auto);
             }).GetComponentInChildren<Text>();
-            buildButton = MakeButton(top, "Build", "BUILD", new Vector2(1, 0.5f), new Vector2(-90, 0), new Vector2(150, 84), () => bootstrap.CycleBuild());
+            buildButton = MakeButton(top, "Build", Loc.T("BUILD"), new Vector2(1, 0.5f), new Vector2(-90, 0), new Vector2(150, 84), () => bootstrap.CycleBuild());
 
             // Bottom controls
             var bottom = MakePanel(safe, "Controls", new Vector2(0, 0), new Vector2(1, 0), Vector2.zero, new Vector2(0, 560), new Color(0.07f, 0.05f, 0.05f, 0.92f));
@@ -294,12 +294,12 @@ namespace P2D.Presentation.Battle
             gauge.anchorMin = gauge.anchorMax = new Vector2(0.5f, 1);
             gauge.anchoredPosition = new Vector2(0, -88);
 
-            commandButton = MakeButton(bottom, "Command", "CMD", new Vector2(1, 1), new Vector2(-130, -230), new Vector2(200, 200), () => runner.UseCommand());
+            commandButton = MakeButton(bottom, "Command", Loc.T("CMD"), new Vector2(1, 1), new Vector2(-130, -230), new Vector2(200, 200), () => runner.UseCommand());
             commandText = commandButton.GetComponentInChildren<Text>();
 
-            MakeButton(bottom, "Dodge", "<<  DODGE  >>", new Vector2(0.5f, 0), new Vector2(0, 90), new Vector2(980, 110), () => runner.Dodge());
+            MakeButton(bottom, "Dodge", "<<  " + Loc.T("DODGE") + "  >>", new Vector2(0.5f, 0), new Vector2(0, 90), new Vector2(980, 110), () => runner.Dodge());
 
-            dodgeHint = MakeLabel(safe, "Dodge Hint", "INCOMING! SWIPE TO DODGE", 52, TextAnchor.MiddleCenter, new Color(1f, 0.35f, 0.3f));
+            dodgeHint = MakeLabel(safe, "Dodge Hint", Loc.T("INCOMING! SWIPE TO DODGE"), 52, TextAnchor.MiddleCenter, new Color(1f, 0.35f, 0.3f));
             dodgeHint.rectTransform.anchorMin = new Vector2(0, 0.42f);
             dodgeHint.rectTransform.anchorMax = new Vector2(1, 0.5f);
             dodgeHint.gameObject.SetActive(false);
@@ -310,9 +310,9 @@ namespace P2D.Presentation.Battle
             resultText = MakeLabel(result, "Result Text", "", 64, TextAnchor.MiddleCenter, Color.white);
             resultText.rectTransform.anchorMin = new Vector2(0, 0.55f);
             resultText.rectTransform.anchorMax = new Vector2(1, 0.75f);
-            retryButton = MakeButton(result, "Retry", "RETRY", new Vector2(0.5f, 0.45f), new Vector2(-230, 0), new Vector2(400, 130), () => bootstrap.StartBattle());
-            nextButton = MakeButton(result, "Next", "NEXT FLOOR", new Vector2(0.5f, 0.45f), new Vector2(230, 0), new Vector2(400, 130), () => bootstrap.NextFloor());
-            continueButton = MakeButton(result, "Continue", "CONTINUE", new Vector2(0.5f, 0.45f), Vector2.zero, new Vector2(500, 130), () => { });
+            retryButton = MakeButton(result, "Retry", Loc.T("RETRY"), new Vector2(0.5f, 0.45f), new Vector2(-230, 0), new Vector2(400, 130), () => bootstrap.StartBattle());
+            nextButton = MakeButton(result, "Next", Loc.T("NEXT FLOOR"), new Vector2(0.5f, 0.45f), new Vector2(230, 0), new Vector2(400, 130), () => bootstrap.NextFloor());
+            continueButton = MakeButton(result, "Continue", Loc.T("CONTINUE"), new Vector2(0.5f, 0.45f), Vector2.zero, new Vector2(500, 130), () => { });
             continueButton.gameObject.SetActive(false);
             resultPanel.SetActive(false);
         }
@@ -326,7 +326,7 @@ namespace P2D.Presentation.Battle
             for (int i = 0; i < setup.skills.Count; i++)
             {
                 int slot = i;
-                var b = MakeButton(bottom, "Skill " + i, setup.skills[i].id, new Vector2(0, 1), new Vector2(150 + i * 230, -230),
+                var b = MakeButton(bottom, "Skill " + i, Loc.Skill(setup.skills[i].id), new Vector2(0, 1), new Vector2(150 + i * 230, -230),
                     new Vector2(210, 200), () => runner.UseSkill(slot));
                 skillButtons.Add(b);
                 skillTexts.Add(b.GetComponentInChildren<Text>());
@@ -410,8 +410,8 @@ namespace P2D.Presentation.Battle
                 view.barFill.anchorMax = new Vector2((float)state.HpFraction, 1);
                 view.barRoot.anchoredPosition = WorldToCanvas(view.root.position + Vector3.up * 3.0f);
                 view.label.text = state.escapeTicksLeft > 0
-                    ? state.spec.id + "  flees in " + Mathf.CeilToInt(state.escapeTicksLeft / (float)BattleSimulation.TicksPerSecond) + "s"
-                    : state.spec.id;
+                    ? Loc.F("{0}  flees in {1}s", Loc.T(state.spec.id), Mathf.CeilToInt(state.escapeTicksLeft / (float)BattleSimulation.TicksPerSecond))
+                    : Loc.T(state.spec.id);
             }
 
             int target = sim.Target;
@@ -438,12 +438,12 @@ namespace P2D.Presentation.Battle
             hpFill.anchorMax = new Vector2(hp, 1);
             shieldFill.anchorMax = new Vector2(Mathf.Clamp01((float)(sim.Shield / sim.DragonMaxHp)), 1);
             hpText.text = Mathf.CeilToInt((float)sim.DragonHp) + " / " + Mathf.CeilToInt((float)sim.DragonMaxHp)
-                + (sim.Shield > 0 ? "   +" + Mathf.CeilToInt((float)sim.Shield) + " shield" : "");
+                + (sim.Shield > 0 ? "   " + Loc.F("+{0} shield", Mathf.CeilToInt((float)sim.Shield)) : "");
             gaugeFill.anchorMax = new Vector2((float)(sim.Gauge / BattleSimulation.MaxGauge), 1);
 
             double left = setup.timeLimitSeconds - sim.ElapsedSeconds;
             timerText.text = Mathf.Max(0, Mathf.CeilToInt((float)left)) + "s";
-            autoText.text = sim.Auto ? "AUTO ON" : "AUTO";
+            autoText.text = sim.Auto ? Loc.T("AUTO ON") : Loc.T("AUTO");
             speedText.text = "x" + runner.Speed;
 
             for (int i = 0; i < skillButtons.Count; i++)
@@ -451,11 +451,11 @@ namespace P2D.Presentation.Battle
                 int ticks = sim.SkillCooldownTicks(i);
                 bool ready = ticks == 0;
                 skillButtons[i].interactable = ready && runner.IsRunning;
-                skillTexts[i].text = setup.skills[i].id.Replace('_', '\n')
+                skillTexts[i].text = Loc.Skill(setup.skills[i].id).Replace(' ', '\n')
                     + (ready ? "" : "\n" + (ticks / (float)BattleSimulation.TicksPerSecond).ToString("0.0") + "s");
             }
             commandButton.interactable = sim.IsCommandReady && runner.IsRunning;
-            commandText.text = sim.IsCommandReady ? "COMMAND\nREADY" : "CMD\n" + Mathf.FloorToInt((float)sim.Gauge) + "%";
+            commandText.text = sim.IsCommandReady ? Loc.T("COMMAND") + "\n" + Loc.T("READY") : Loc.T("CMD") + "\n" + Mathf.FloorToInt((float)sim.Gauge) + "%";
         }
 
         // ---- events --------------------------------------------------------------------
@@ -488,10 +488,10 @@ namespace P2D.Presentation.Battle
                     Float(dragon.position + Vector3.up * 2.4f, "+" + Mathf.RoundToInt((float)e.amount), new Color(0.5f, 1f, 0.5f), 40);
                     break;
                 case BattleEventType.Dodged:
-                    Float(dragon.position + Vector3.up * 2.4f, "DODGE", new Color(0.6f, 0.9f, 1f), 44);
+                    Float(dragon.position + Vector3.up * 2.4f, Loc.T("DODGE"), new Color(0.6f, 0.9f, 1f), 44);
                     break;
                 case BattleEventType.Enraged:
-                    Float(new Vector3(0, 3, 3.6f), "ENRAGED", new Color(1f, 0.2f, 0.2f), 56);
+                    Float(new Vector3(0, 3, 3.6f), Loc.T("ENRAGED"), new Color(1f, 0.2f, 0.2f), 56);
                     break;
             }
         }
@@ -502,13 +502,13 @@ namespace P2D.Presentation.Battle
             string head;
             switch (outcome)
             {
-                case BattleOutcome.Victory: head = "VICTORY"; break;
-                case BattleOutcome.Escaped: head = "IT GOT AWAY"; break;
-                case BattleOutcome.Timeout: head = "TIME UP"; break;
-                default: head = "DEFEAT"; break;
+                case BattleOutcome.Victory: head = Loc.T("VICTORY"); break;
+                case BattleOutcome.Escaped: head = Loc.T("IT GOT AWAY"); break;
+                case BattleOutcome.Timeout: head = Loc.T("TIME UP"); break;
+                default: head = Loc.T("DEFEAT"); break;
             }
-            resultText.text = head + "\n<size=36>" + runner.Simulation.ElapsedSeconds.ToString("0.0") + " s · "
-                + inputs.Count + " inputs · HP " + Mathf.RoundToInt((float)(runner.Simulation.DragonHp / runner.Simulation.DragonMaxHp * 100)) + "%</size>";
+            resultText.text = head + "\n<size=36>" + Loc.F("{0} s · {1} inputs · HP {2}%", runner.Simulation.ElapsedSeconds.ToString("0.0"), inputs.Count,
+                Mathf.RoundToInt((float)(runner.Simulation.DragonHp / runner.Simulation.DragonMaxHp * 100))) + "</size>";
         }
 
         // ---- floating text -------------------------------------------------------------

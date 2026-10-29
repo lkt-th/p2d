@@ -19,9 +19,9 @@ namespace P2D.Presentation.Screens
             if (LockedCard(list, Feature.Riders)) return;
             var seals = save.wallet.soulSeals;
             var info = UiKit.Row(list, 90, UiKit.Surface);
-            Cell(info, "Soul seals  R " + seals[0] + " · SR " + seals[1] + " · SSR " + seals[2] + " · UR " + seals[3]
-                + "    Shards " + save.wallet.soulShards, 0.02f, 0.72f, 28);
-            CellButton(info, "SUMMON", 0.74f, 1, () => Menu.Show(ScreenId.Summon), true, UiKit.Accent);
+            Cell(info, Loc.F("Soul seals  R {0} · SR {1} · SSR {2} · UR {3}    Shards {4}", seals[0], seals[1], seals[2], seals[3],
+                save.wallet.soulShards), 0.02f, 0.72f, 28);
+            CellButton(info, Loc.T("SUMMON"), 0.74f, 1, () => Menu.Show(ScreenId.Summon), true, UiKit.Accent);
 
             var owned = new List<RiderState>(save.riders);
             owned.Sort((a, b) =>
@@ -41,20 +41,20 @@ namespace P2D.Presentation.Screens
 
                 var buffs = new List<string>();
                 foreach (var m in RiderRules.Buffs(profile, state)) buffs.Add(Fmt.Stat(m));
-                if (profile.hasPath) buffs.Add(profile.path + " +" + RiderRules.Affinity(profile, state));
-                if (profile.huntBase > 0) buffs.Add("Hunt +" + (RiderRules.HuntBonus(profile, state) * 100).ToString("0.#") + "%");
+                if (profile.hasPath) buffs.Add(Loc.Enum(profile.path) + " +" + RiderRules.Affinity(profile, state));
+                if (profile.huntBase > 0) buffs.Add(Loc.F("Hunt +{0}%", (RiderRules.HuntBonus(profile, state) * 100).ToString("0.#")));
                 var command = RiderCatalog.Command(profile.commandSkillId);
 
-                Cell(row, "<b>" + state.riderId + "</b>  " + profile.rank + "  " + Fmt.Stars(state.star)
-                    + "   copies " + state.copies + "\n" + string.Join(", ", buffs.ToArray())
-                    + (command != null ? "\n<color=#a3a8ba>Command: " + command.id + "</color>" : ""), 0.02f, 0.6f, 26);
+                Cell(row, "<b>" + Loc.Rider(state.riderId) + "</b>  " + profile.rank + "  " + Fmt.Stars(state.star)
+                    + "   " + Loc.F("copies {0}", state.copies) + "\n" + string.Join(", ", buffs.ToArray())
+                    + (command != null ? "\n<color=#a3a8ba>" + Loc.F("Command: {0}", Loc.Skill(command.id)) + "</color>" : ""), 0.02f, 0.6f, 26);
 
                 string id = state.riderId;
-                CellButton(row, riding ? "RIDING" : "RIDE", 0.61f, 0.8f,
-                    () => Menu.Commit(GameActions.SetMainRider(save, id), "Now riding " + id), !riding);
+                CellButton(row, riding ? Loc.T("RIDING") : Loc.T("RIDE"), 0.61f, 0.8f,
+                    () => Menu.Commit(GameActions.SetMainRider(save, id), Loc.F("Now riding {0}", Loc.Rider(id))), !riding);
 
                 bool maxed = state.star >= RiderRules.MaxStar;
-                string starText = maxed ? "5*" : "STAR UP\n" + Fmt.Num(GameActions.StarUpGold(profile.rank, state.star + 1)) + " gold";
+                string starText = maxed ? "5*" : Loc.T("STAR UP") + "\n" + Loc.F("{0} gold", Fmt.Num(GameActions.StarUpGold(profile.rank, state.star + 1)));
                 CellButton(row, starText, 0.8f, 1, () => Menu.Commit(GameActions.StarUp(save, id)),
                     !maxed && RiderRules.CanStarUp(state, seals[(int)profile.rank]), UiKit.SurfaceAlt);
             }

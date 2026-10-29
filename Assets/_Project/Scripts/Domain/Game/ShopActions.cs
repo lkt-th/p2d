@@ -65,21 +65,25 @@ namespace P2D.Domain
             return 0;
         }
 
+        /// <summary>Display name in the current language (the rider copy names the featured rider).</summary>
+        public static string ShopItemName(ShopItem item) =>
+            item.id.StartsWith("rider_") ? Loc.F("{0} (rider copy)", Loc.Rider(item.id.Substring(6))) : Loc.T(item.name);
+
         public static ActionResult Buy(PlayerSave save, DateTime utcNow, string id)
         {
             var shop = Shop(save, utcNow);
             var item = ShardShop(shop.weekIndex).Find(i => i.id == id);
-            if (item == null) return ActionResult.Fail("Not sold this week");
+            if (item == null) return ActionResult.Fail(Loc.T("Not sold this week"));
             int bought = Bought(save, utcNow, id);
-            if (bought >= item.weeklyLimit) return ActionResult.Fail("Sold out this week");
-            if (save.wallet.soulShards < item.price) return ActionResult.Fail("Need " + item.price + " soul shards");
+            if (bought >= item.weeklyLimit) return ActionResult.Fail(Loc.T("Sold out this week"));
+            if (save.wallet.soulShards < item.price) return ActionResult.Fail(Loc.F("Need {0} soul shards", item.price));
 
-            if (!Grant(save, item.id)) return ActionResult.Fail("Unknown item");
+            if (!Grant(save, item.id)) return ActionResult.Fail(Loc.T("Unknown item"));
             save.wallet.soulShards -= item.price;
             var record = shop.bought.Find(p => p.id == id);
             if (record == null) shop.bought.Add(record = new ShopPurchase { id = id });
             record.count++;
-            return ActionResult.Ok("Bought " + item.name);
+            return ActionResult.Ok(Loc.F("Bought {0}", ShopItemName(item)));
         }
 
         public static int StaminaRefillsLeft(PlayerSave save, DateTime utcNow)
@@ -94,14 +98,14 @@ namespace P2D.Domain
             var shop = Shop(save, utcNow);
             int today = WeeklyCalendar.DayIndex(utcNow);
             if (shop.staminaDay != today) { shop.staminaDay = today; shop.staminaRefillsToday = 0; }
-            if (shop.staminaRefillsToday >= StaminaRefillsPerDay) return ActionResult.Fail("No refills left today");
-            if (save.wallet.crystals < StaminaRefillCrystals) return ActionResult.Fail("Need " + StaminaRefillCrystals + " crystals");
+            if (shop.staminaRefillsToday >= StaminaRefillsPerDay) return ActionResult.Fail(Loc.T("No refills left today"));
+            if (save.wallet.crystals < StaminaRefillCrystals) return ActionResult.Fail(Loc.F("Need {0} crystals", StaminaRefillCrystals));
 
             OfflineProgress.Apply(save, utcNow);
             save.wallet.crystals -= StaminaRefillCrystals;
             save.hunt.stamina += StaminaRefillAmount; // may go above max, like a purchased potion
             shop.staminaRefillsToday++;
-            return ActionResult.Ok("+" + StaminaRefillAmount + " hunt stamina");
+            return ActionResult.Ok(Loc.F("+{0} hunt stamina", StaminaRefillAmount));
         }
 
         /// <summary>The shop state for the current week (purchases reset at the weekly reset).</summary>

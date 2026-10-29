@@ -14,7 +14,7 @@ namespace P2D.PlayMode.Tests
     /// Explicit: run it on purpose, e.g.
     ///   Unity.exe -batchmode -projectPath . -runTests -testPlatform PlayMode
     ///             -testFilter P2D.PlayMode.Tests.ScreenshotCapture -testResults out.xml
-    /// Output: Logs/Screenshots (override with the P2D_SCREENSHOT_DIR environment variable).
+    /// Output: Logs/Screenshots (override with the P2D_SCREENSHOT_DIR environment variable). Thai unless P2D_SCREENSHOT_LANG=en.
     /// </summary>
     [Explicit, Category("Screenshots")]
     public class ScreenshotCapture
@@ -37,6 +37,7 @@ namespace P2D.PlayMode.Tests
         public void SetUp()
         {
             SaveManager.StorageOverride = new MemorySaveStorage();
+            // Thai by default (the review language); P2D_SCREENSHOT_LANG=en captures the English UI.
             BattleHandoff.Pending = null;
             BattleHandoff.LastMessage = null;
         }
@@ -46,6 +47,7 @@ namespace P2D.PlayMode.Tests
         {
             if (SaveManager.Instance != null) Object.DestroyImmediate(SaveManager.Instance.gameObject);
             SaveManager.StorageOverride = null;
+            P2D.Services.LanguageSetting.Override = null;
             foreach (var go in Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None))
                 if (go.transform.parent == null && go.name != "Code-based tests runner") Object.Destroy(go);
         }
@@ -93,7 +95,7 @@ namespace P2D.PlayMode.Tests
             menu.Show(ScreenId.Story);
             yield return null;
             foreach (var b in Object.FindObjectsByType<UnityEngine.UI.Button>(FindObjectsSortMode.None))
-                if (b.gameObject.activeInHierarchy && b.GetComponentInChildren<UnityEngine.UI.Text>().text.StartsWith("FIGHT STAGE")) b.onClick.Invoke();
+                if (b.gameObject.activeInHierarchy && b.GetComponentInChildren<UnityEngine.UI.Text>().text.StartsWith(P2D.Domain.Loc.F("FIGHT STAGE {0}", "1-1"))) b.onClick.Invoke();
             yield return null;
             yield return null;
             Capture("story-dialogue");

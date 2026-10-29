@@ -17,6 +17,7 @@ namespace P2D.PlayMode.Tests
         public void SetUp()
         {
             SaveManager.StorageOverride = new MemorySaveStorage(); // never touch the real save
+            P2D.Services.LanguageSetting.Override = P2D.Domain.Language.English; // tests find buttons by their English labels
             BattleHandoff.Pending = null;
             BattleHandoff.LastMessage = null;
         }
@@ -26,6 +27,8 @@ namespace P2D.PlayMode.Tests
         {
             if (SaveManager.Instance != null) Object.DestroyImmediate(SaveManager.Instance.gameObject);
             SaveManager.StorageOverride = null;
+            P2D.Services.LanguageSetting.Override = null;
+            P2D.Domain.Loc.Current = P2D.Domain.Language.English;
             foreach (var go in Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None))
                 if (go.transform.parent == null && go.name != "Code-based tests runner") Object.Destroy(go);
         }

@@ -30,18 +30,18 @@ namespace P2D.Domain
         {
             switch (feature)
             {
-                case Feature.Enhance: return "Enhance";
-                case Feature.Riders: return "Riders & Summon";
-                case Feature.Hunt: return "Hunting Grounds";
-                case Feature.Spire: return "Weekly Spire";
-                default: return "Workshop (reforge & refine)";
+                case Feature.Enhance: return Loc.T("Enhance");
+                case Feature.Riders: return Loc.T("Riders & Summon");
+                case Feature.Hunt: return Loc.T("Hunting Grounds");
+                case Feature.Spire: return Loc.T("Weekly Spire");
+                default: return Loc.T("Workshop (reforge & refine)");
             }
         }
 
         /// <summary>"Clear story 1-6" for locked buttons.</summary>
-        public static string Hint(Feature feature) => "Clear story " + StoryActions.Label(UnlockStage(feature));
+        public static string Hint(Feature feature) => Loc.F("Clear story {0}", StoryActions.Label(UnlockStage(feature)));
 
-        public static ActionResult Locked(Feature feature) => ActionResult.Fail(Name(feature) + " is locked: " + Hint(feature).ToLowerInvariant());
+        public static ActionResult Locked(Feature feature) => ActionResult.Fail(Loc.F("{0} is locked: {1}", Name(feature), Hint(feature)));
 
         /// <summary>Features whose unlock stage is exactly <paramref name="index"/>.</summary>
         public static List<Feature> OpenedBy(int index)

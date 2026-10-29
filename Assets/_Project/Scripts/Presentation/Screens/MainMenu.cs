@@ -47,11 +47,12 @@ namespace P2D.Presentation.Screens
         void Awake()
         {
             if (SaveManager.Instance == null) new GameObject("SaveManager").AddComponent<SaveManager>();
+            LanguageSetting.Apply();
             BuildShell();
 
             if (Save == null)
             {
-                Toast("Save could not be loaded: " + SaveManager.Instance.LastLoad.error, 30);
+                Toast(Loc.F("Save could not be loaded: {0}", SaveManager.Instance.LastLoad.error), 30);
                 return;
             }
 
@@ -121,7 +122,7 @@ namespace P2D.Presentation.Screens
             BattleHandoff.Pending = new BattleHandoff.Request
             {
                 setup = setup,
-                title = zoneInfo.name + "  ·  " + kind,
+                title = Loc.T(zoneInfo.name) + "  ·  " + Loc.Enum(kind),
                 onFinished = (outcome, inputs) =>
                 {
                     var live = SaveManager.Instance.Current;
@@ -162,6 +163,14 @@ namespace P2D.Presentation.Screens
             toastUntil = Time.unscaledTime + seconds;
         }
 
+        /// <summary>Switches the UI language and reloads the menu so every label is rebuilt in it.</summary>
+        public void SetLanguage(Language language)
+        {
+            LanguageSetting.Set(language);
+            SaveManager.Instance.SaveNow();
+            SceneManager.LoadScene(BattleHandoff.MenuScene);
+        }
+
         /// <summary>Fights the next story stage in the battle scene; the first clear is paid on return.</summary>
         public void StartStoryBattle(int index)
         {
@@ -174,7 +183,7 @@ namespace P2D.Presentation.Screens
             BattleHandoff.Pending = new BattleHandoff.Request
             {
                 setup = setup,
-                title = "Stage " + StoryActions.Label(index) + "  ·  " + chapter.name,
+                title = Loc.F("Story {0}", StoryActions.Label(index)) + "  ·  " + Loc.T(chapter.name),
                 onFinished = (outcome, inputs) =>
                 {
                     var live = SaveManager.Instance.Current;
@@ -182,11 +191,11 @@ namespace P2D.Presentation.Screens
                     SaveManager.Instance.MarkDirty();
                     SaveManager.Instance.SaveNow();
                     BattleHandoff.LastMessage = reward.firstClear
-                        ? "Stage " + StoryActions.Label(index) + " cleared! +" + Fmt.Num(reward.gold) + " gold, +" + reward.essence + " essence"
-                          + (reward.gear != null ? ", new " + reward.gear.rarity + " " + reward.gear.slot : "")
-                          + (reward.riderId.Length > 0 ? ", rider " + reward.riderId + (reward.riderIsNew ? " joins you" : " (copy)") : "")
-                          + (reward.unlocked.Count > 0 ? "\nUnlocked: " + string.Join(", ", reward.unlocked.ConvertAll(FeatureUnlocks.Name).ToArray()) : "")
-                        :"Stage " + StoryActions.Label(index) + ": " + outcome;
+                        ? Loc.F("Stage {0} cleared! +{1} gold, +{2} essence", StoryActions.Label(index), Fmt.Num(reward.gold), reward.essence)
+                          + (reward.gear != null ? Loc.F(", new {0} {1}", Loc.Enum(reward.gear.rarity), Loc.Enum(reward.gear.slot)) : "")
+                          + (reward.riderId.Length > 0 ? Loc.F(reward.riderIsNew ? ", {0} joins you" : ", rider {0} (copy)", Loc.Rider(reward.riderId)) : "")
+                          + (reward.unlocked.Count > 0 ? "\n" + Loc.F("Unlocked: {0}", string.Join(", ", reward.unlocked.ConvertAll(FeatureUnlocks.Name).ToArray())) : "")
+                        : Loc.F("Stage {0}: {1}", StoryActions.Label(index), Loc.Enum(outcome));
                 },
             };
             SceneManager.LoadScene(BattleHandoff.BattleScene);
@@ -204,7 +213,7 @@ namespace P2D.Presentation.Screens
             BattleHandoff.Pending = new BattleHandoff.Request
             {
                 setup = setup,
-                title = "Floor " + floor + "  ·  " + theme.name,
+                title = Loc.F("Floor {0}", floor) + "  ·  " + Loc.T(theme.name),
                 onFinished = (outcome, inputs) =>
                 {
                     // Runs in the battle scene: use the singleton, not this destroyed menu.
@@ -213,9 +222,9 @@ namespace P2D.Presentation.Screens
                     SaveManager.Instance.MarkDirty();
                     SaveManager.Instance.SaveNow();
                     BattleHandoff.LastMessage = reward.firstClear
-                        ? "Floor " + floor + " cleared! +" + Fmt.Num(reward.resources.gold) + " gold, +" + reward.resources.forgeStones
-                          + " forge stones, new " + reward.gear.rarity + " " + reward.gear.slot
-                        : outcome == BattleOutcome.Victory ? "Victory (no first-clear reward)" : "Floor " + floor + ": " + outcome;
+                        ? Loc.F("Floor {0} cleared! +{1} gold, +{2} forge stones, new {3} {4}", floor, Fmt.Num(reward.resources.gold),
+                            reward.resources.forgeStones, Loc.Enum(reward.gear.rarity), Loc.Enum(reward.gear.slot))
+                        : outcome == BattleOutcome.Victory ? Loc.T("Victory (no first-clear reward)") : Loc.F("Floor {0}: {1}", floor, Loc.Enum(outcome));
                 },
             };
             SceneManager.LoadScene(BattleHandoff.BattleScene);
@@ -271,7 +280,7 @@ namespace P2D.Presentation.Screens
             {
                 var id = NavTargets[i];
                 var cell = UiKit.Slice(UiKit.Fill(nav, "Nav " + id), i / (float)NavLabels.Length, (i + 1) / (float)NavLabels.Length, 10);
-                var button = UiKit.TextButton(cell, NavLabels[i], () => Show(id), UiKit.Surface, 28);
+                var button = UiKit.TextButton(cell, Loc.T(NavLabels[i]), () => Show(id), UiKit.Surface, 28);
                 navImages.Add(button.GetComponent<Image>());
             }
 
@@ -286,8 +295,8 @@ namespace P2D.Presentation.Screens
             var save = Save;
             if (save == null || resourceText == null) return;
             var w = save.wallet;
-            resourceText.text = "Gold " + Fmt.Num(w.gold) + "   Gems " + Fmt.Num(w.crystals) + "   Essence " + w.dragonEssence
-                + "   Forge " + w.forgeStones + "   Sigils " + w.pactSigils + "   Scales " + w.ancientScales;
+            resourceText.text = Loc.F("Gold {0}   Gems {1}   Essence {2}   Forge {3}   Sigils {4}   Scales {5}", Fmt.Num(w.gold),
+                Fmt.Num(w.crystals), w.dragonEssence, w.forgeStones, w.pactSigils, w.ancientScales);
         }
     }
 
@@ -334,11 +343,11 @@ namespace P2D.Presentation.Screens
         protected void AdventureTabs(RectTransform list, ScreenId active)
         {
             var row = UiKit.Row(list, 100);
-            CellButton(row, "STORY", 0, 1 / 3f, () => Menu.Show(ScreenId.Story), true,
+            CellButton(row, Loc.T("STORY"), 0, 1 / 3f, () => Menu.Show(ScreenId.Story), true,
                 active == ScreenId.Story ? UiKit.Accent : UiKit.SurfaceAlt);
-            CellButton(row, "WEEKLY SPIRE", 1 / 3f, 2 / 3f, () => Menu.Show(ScreenId.Spire), true,
+            CellButton(row, Loc.T("WEEKLY SPIRE"), 1 / 3f, 2 / 3f, () => Menu.Show(ScreenId.Spire), true,
                 active == ScreenId.Spire ? UiKit.Accent : UiKit.SurfaceAlt);
-            CellButton(row, "HUNTING", 2 / 3f, 1, () => Menu.Show(ScreenId.Hunt), true,
+            CellButton(row, Loc.T("HUNTING"), 2 / 3f, 1, () => Menu.Show(ScreenId.Hunt), true,
                 active == ScreenId.Hunt ? UiKit.Accent : UiKit.SurfaceAlt);
         }
 
@@ -347,9 +356,9 @@ namespace P2D.Presentation.Screens
         {
             if (FeatureUnlocks.IsUnlocked(Save, feature)) return false;
             var row = UiKit.Row(list, 170, UiKit.Surface);
-            Cell(row, "<b>" + FeatureUnlocks.Name(feature) + "</b> is locked\n<color=#9AA3B5>" + FeatureUnlocks.Hint(feature)
-                + " to open it</color>", 0.02f, 0.7f, 30);
-            CellButton(row, "STORY", 0.72f, 1, () => Menu.Show(ScreenId.Story), true, UiKit.Accent);
+            Cell(row, Loc.F("<b>{0}</b> is locked", FeatureUnlocks.Name(feature)) + "\n<color=#9AA3B5>"
+                + Loc.F("{0} to open it", FeatureUnlocks.Hint(feature)) + "</color>", 0.02f, 0.7f, 30);
+            CellButton(row, Loc.T("STORY"), 0.72f, 1, () => Menu.Show(ScreenId.Story), true, UiKit.Accent);
             return true;
         }
 
@@ -375,7 +384,7 @@ namespace P2D.Presentation.Screens
         public static string Stat(StatModifier m)
         {
             bool percent = m.type == ModType.Percent;
-            string name = m.stat.ToString() + (percent && !StatSheet.IsRateStat(m.stat) ? "%" : "");
+            string name = Loc.Enum(m.stat) + (percent && !StatSheet.IsRateStat(m.stat) ? "%" : "");
             string value = percent ? (m.value * 100).ToString("0.#") + "%" : Math.Round(m.value).ToString("N0");
             return name + " +" + value;
         }
@@ -386,8 +395,8 @@ namespace P2D.Presentation.Screens
             var parts = new List<string>();
             foreach (var s in item.subs ?? new StatModifier[0]) parts.Add(Stat(s));
             var set = SetCatalog.Find(item.setId);
-            return "<b>" + item.slot + "</b>  " + RarityTag(item.rarity) + " +" + item.enhance + "   " + item.path + " "
-                + AffinityRules.ForEquipment(item.rarity, item.enhance) + (set != null ? "   <color=#e9c46a>" + set.name + "</color>" : "") + "\n" + Stat(main)
+            return "<b>" + Loc.Enum(item.slot) + "</b>  " + RarityTag(item.rarity) + " +" + item.enhance + "   " + Loc.Enum(item.path) + " "
+                + AffinityRules.ForEquipment(item.rarity, item.enhance) + (set != null ? "   <color=#e9c46a>" + Loc.T(set.name) + "</color>" : "") + "\n" + Stat(main)
                 + (parts.Count > 0 ? "   <color=#a3a8ba>" + string.Join(", ", parts.ToArray()) + "</color>" : "");
         }
 
@@ -403,10 +412,10 @@ namespace P2D.Presentation.Screens
                 case Rarity.Mythic: color = "#e5534b"; break;
                 default: color = "#c8ccd6"; break;
             }
-            return "<color=" + color + ">" + r + "</color>";
+            return "<color=" + color + ">" + Loc.Enum(r) + "</color>";
         }
 
         public static string Duration(TimeSpan t) =>
-            t.TotalDays >= 1 ? (int)t.TotalDays + "d " + t.Hours + "h" : t.Hours + "h " + t.Minutes + "m";
+            t.TotalDays >= 1 ? Loc.F("{0}d {1}h", (int)t.TotalDays, t.Hours) : Loc.F("{0}h {1}m", t.Hours, t.Minutes);
     }
 }

@@ -27,9 +27,9 @@ namespace P2D.Presentation.Screens
             AdventureTabs(list, ScreenId.Story);
 
             var head = UiKit.Row(list, 150, new Color(0.10f, 0.13f, 0.18f));
-            Cell(head, "<b>Chapter " + chapterNo + " · " + chapter.name + "</b>   enemies: " + chapter.element
-                + "\nCleared " + save.story.cleared + " / " + StoryActions.TotalStages
-                + "   ·   boss gives rider <b>" + chapter.riderReward + "</b>", 0.02f, 1, 30);
+            Cell(head, "<b>" + Loc.F("Chapter {0} · {1}", chapterNo, Loc.T(chapter.name)) + "</b>   " + Loc.F("enemies: {0}", Loc.Enum(chapter.element))
+                + "\n" + Loc.F("Cleared {0} / {1}", save.story.cleared, StoryActions.TotalStages)
+                + "   ·   " + Loc.F("boss gives rider <b>{0}</b>", Loc.Rider(chapter.riderReward)), 0.02f, 1, 30);
 
             // Ten stage chips for this chapter: done / next / locked.
             var chips = UiKit.Row(list, 90);
@@ -39,10 +39,10 @@ namespace P2D.Presentation.Screens
                 bool done = index <= save.story.cleared;
                 var color = index == next ? UiKit.Accent : done ? new Color(0.25f, 0.45f, 0.30f) : UiKit.SurfaceAlt;
                 var kind = StoryActions.KindOf(index);
-                string label = kind == StoryStageKind.Boss ? "B" : kind == StoryStageKind.Guardian ? "G" : s.ToString();
+                string label = kind == StoryStageKind.Boss ? Loc.T("B") : kind == StoryStageKind.Guardian ? Loc.T("G") : s.ToString();
                 var cell = UiKit.Slice(UiKit.Fill(chips, "Stage " + s), (s - 1) / 10f, s / 10f, 4);
                 cell.gameObject.AddComponent<UnityEngine.UI.Image>().color = color;
-                UiKit.Label(cell, label, 30, TextAnchor.MiddleCenter);
+                UiKit.Label(cell, label, label.Length > 2 ? 24 : 30, TextAnchor.MiddleCenter);
             }
 
             if (talkingStage == next && next > 0)
@@ -53,7 +53,7 @@ namespace P2D.Presentation.Screens
 
             if (next == 0)
             {
-                Cell(UiKit.Row(list, 100, UiKit.Surface), "Every chapter is cleared. More chapters are on the way.", 0.02f, 1);
+                Cell(UiKit.Row(list, 100, UiKit.Surface), Loc.T("Every chapter is cleared. More chapters are on the way."), 0.02f, 1);
                 return;
             }
 
@@ -61,21 +61,21 @@ namespace P2D.Presentation.Screens
             var enemies = StoryActions.Enemies(next, Menu.Tuning);
             var e = enemies[0];
             double power = LoadoutCalculator.Compute(GameActions.ToLoadout(save)).PowerScore();
-            Header(list, "Next: stage " + StoryActions.Label(next) + (kindNext == StoryStageKind.Normal ? "" : "  ·  " + kindNext));
+            Header(list, Loc.F("Next: stage {0}", StoryActions.Label(next)) + (kindNext == StoryStageKind.Normal ? "" : "  ·  " + Loc.Enum(kindNext)));
             var preview = UiKit.Row(list, 170, UiKit.Surface);
-            Cell(preview, enemies.Count + " × " + e.id + "  Lv " + e.level + "   HP " + e.hp.ToString("N0") + "   ATK " + e.attack.ToString("N0")
-                + (e.heavyIntervalSeconds > 0 ? "\nTelegraphed heavy attack every " + e.heavyIntervalSeconds + " s — swipe to dodge" : "")
-                + "\nYour dragon Lv " + save.dragon.level + "   ·   power " + power.ToString("N0"), 0.02f, 1, 28);
+            Cell(preview, enemies.Count + " × " + Loc.T(e.id) + "  " + Loc.F("Lv {0}", e.level) + "   HP " + e.hp.ToString("N0") + "   ATK " + e.attack.ToString("N0")
+                + (e.heavyIntervalSeconds > 0 ? "\n" + Loc.F("Telegraphed heavy attack every {0} s — swipe to dodge", e.heavyIntervalSeconds) : "")
+                + "\n" + Loc.F("Your dragon Lv {0}   ·   power {1}", save.dragon.level, power.ToString("N0")), 0.02f, 1, 28);
 
             var r = StoryActions.Rewards(next);
             var reward = UiKit.Row(list, 110, UiKit.Surface);
-            Cell(reward, "First clear: " + Fmt.Num(r.gold) + " gold · " + r.essence + " essence · " + r.forgeStones + " forge stones"
-                + (kindNext != StoryStageKind.Normal ? " · 1 " + StoryActions.GearRarity(next) + " item" : "")
-                + (r.pactSigils > 0 ? " · " + r.pactSigils + " sigils · " + r.crystals + " gems" : "")
-                + (r.riderId.Length > 0 ? " · rider " + r.riderId : ""), 0.02f, 1, 28);
+            Cell(reward, Loc.F("First clear: {0} gold · {1} essence · {2} forge stones", Fmt.Num(r.gold), r.essence, r.forgeStones)
+                + (kindNext != StoryStageKind.Normal ? " · " + Loc.F("1 {0} item", Loc.Enum(StoryActions.GearRarity(next))) : "")
+                + (r.pactSigils > 0 ? " · " + Loc.F("{0} sigils · {1} gems", r.pactSigils, r.crystals) : "")
+                + (r.riderId.Length > 0 ? " · " + Loc.F("rider {0}", Loc.Rider(r.riderId)) : ""), 0.02f, 1, 28);
 
             var go = UiKit.Row(list, 150);
-            CellButton(go, "FIGHT STAGE " + StoryActions.Label(next), 0.1f, 0.9f, () => Fight(next), true, UiKit.Accent, 40);
+            CellButton(go, Loc.F("FIGHT STAGE {0}", StoryActions.Label(next)), 0.1f, 0.9f, () => Fight(next), true, UiKit.Accent, 40);
         }
 
         void Fight(int index)
@@ -96,13 +96,13 @@ namespace P2D.Presentation.Screens
             var current = lines[Mathf.Clamp(line, 0, lines.Length - 1)];
             bool last = line >= lines.Length - 1;
 
-            Header(list, "Stage " + StoryActions.Label(index) + "  ·  " + (line + 1) + " / " + lines.Length);
+            Header(list, Loc.F("Story {0}", StoryActions.Label(index)) + "  ·  " + (line + 1) + " / " + lines.Length);
             var box = UiKit.Row(list, 300, new Color(0.13f, 0.11f, 0.17f));
             Cell(box, "<b><color=#F08C4B>" + current.speaker + "</color></b>\n" + current.text, 0.03f, 0.97f, 32);
 
             var buttons = UiKit.Row(list, 130);
-            CellButton(buttons, "SKIP", 0, 0.3f, () => EndScene(save, index), true, UiKit.SurfaceAlt);
-            CellButton(buttons, last ? "FIGHT!" : "NEXT", 0.35f, 1, () =>
+            CellButton(buttons, Loc.T("SKIP"), 0, 0.3f, () => EndScene(save, index), true, UiKit.SurfaceAlt);
+            CellButton(buttons, last ? Loc.T("FIGHT!") : Loc.T("NEXT"), 0.35f, 1, () =>
             {
                 if (last) EndScene(save, index);
                 else { line++; Refresh(); }

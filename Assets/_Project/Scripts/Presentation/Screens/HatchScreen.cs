@@ -24,7 +24,7 @@ namespace P2D.Presentation.Screens
             bool cracked = taps >= GameActions.HatchTaps;
 
             var title = UiKit.Rect(panel, "Title", new Vector2(0, 0.78f), new Vector2(1, 0.95f), new Vector2(40, 0), new Vector2(-40, 0));
-            UiKit.Label(title, cracked ? "Name your dragon" : TapLines[Mathf.Min(taps, TapLines.Length - 1)], 44, TextAnchor.MiddleCenter);
+            UiKit.Label(title, Loc.T(cracked ? "Name your dragon" : TapLines[Mathf.Min(taps, TapLines.Length - 1)]), 44, TextAnchor.MiddleCenter);
 
             // The egg: brighter with every tap, a hatchling-blue block once it opens.
             var eggRect = UiKit.Rect(panel, "Egg", new Vector2(0.28f, 0.38f), new Vector2(0.72f, 0.76f), Vector2.zero, Vector2.zero);
@@ -39,7 +39,7 @@ namespace P2D.Presentation.Screens
             if (!cracked)
             {
                 var hint = UiKit.Rect(panel, "Hint", new Vector2(0, 0.28f), new Vector2(1, 0.36f), Vector2.zero, Vector2.zero);
-                UiKit.Label(hint, "Tap " + (GameActions.HatchTaps - taps) + " more", 32, TextAnchor.MiddleCenter, UiKit.Muted);
+                UiKit.Label(hint, Loc.F("Tap {0} more", GameActions.HatchTaps - taps), 32, TextAnchor.MiddleCenter, UiKit.Muted);
                 return;
             }
 
@@ -47,7 +47,7 @@ namespace P2D.Presentation.Screens
             var input = NameField(field, Save.dragon.name);
 
             var go = UiKit.Rect(panel, "Hatch Button", new Vector2(0.2f, 0.12f), new Vector2(0.8f, 0.22f), Vector2.zero, Vector2.zero);
-            UiKit.TextButton(go, "HATCH", () =>
+            UiKit.TextButton(go, Loc.T("HATCH"), () =>
             {
                 var result = GameActions.Hatch(Save, input.text);
                 Menu.Commit(result);
@@ -63,7 +63,7 @@ namespace P2D.Presentation.Screens
             input.textComponent = UiKit.Label(textRect, "", 40, TextAnchor.MiddleCenter);
             input.textComponent.supportRichText = false;
             var placeholderRect = UiKit.Rect(parent, "Placeholder", Vector2.zero, Vector2.one, new Vector2(24, 0), new Vector2(-24, 0));
-            input.placeholder = UiKit.Label(placeholderRect, "Dragon name", 40, TextAnchor.MiddleCenter, UiKit.Muted);
+            input.placeholder = UiKit.Label(placeholderRect, Loc.T("Dragon name"), 40, TextAnchor.MiddleCenter, UiKit.Muted);
             input.characterLimit = GameActions.MaxNameLength;
             input.text = value;
             return input;

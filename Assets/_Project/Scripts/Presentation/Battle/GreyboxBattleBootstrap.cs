@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using P2D.Domain;
+using P2D.Services;
 using UnityEngine;
 
 namespace P2D.Presentation.Battle
@@ -33,6 +34,7 @@ namespace P2D.Presentation.Battle
 
         void Awake()
         {
+            if (BattleHandoff.Pending == null) LanguageSetting.Apply(); // opened directly as a sandbox
             foreach (var scenario in BalanceScenarios.Default())
                 foreach (var build in scenario.builds)
                 {

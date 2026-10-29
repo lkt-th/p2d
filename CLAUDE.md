@@ -21,8 +21,8 @@ weekly dungeon. The user writes in Thai — reply in Thai.
 | `P2D.Services` | `Scripts/Services` | Unity glue: `SaveManager`, `FileSaveStorage`, `JsonUtilitySaveSerializer`, `ServerClock`. |
 | `P2D.Presentation` | `Scripts/Presentation` | `SafeAreaFitter`, `PortraitCanvasScaler`, `BattleRunner`. |
 | `P2D.Editor` | `Scripts/Editor` | Portrait player-settings hook, **P2D → Balance Simulator** window. |
-| `P2D.Domain.Tests` | `Tests/EditMode` | NUnit EditMode tests (156). |
-| `P2D.PlayMode.Tests` | `Tests/PlayMode` | PlayMode tests for the greybox scenes (18). |
+| `P2D.Domain.Tests` | `Tests/EditMode` | NUnit EditMode tests (160). |
+| `P2D.PlayMode.Tests` | `Tests/PlayMode` | PlayMode tests for the greybox scenes (19). |
 
 Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules`, `RiderCatalog`,
 `SkillCatalog`, `PathTraitRules`/`SkillLoadoutRules`, `LoadoutCalculator`, `BattleSimulation`
@@ -65,7 +65,7 @@ Key Domain pieces: `DragonRules`, `EquipmentRules`, `AffinityRules`, `RiderRules
   - PlayMode tests use `SaveManager.StorageOverride = new MemorySaveStorage()` so they never touch the real save.
   - Screenshots for visual review: run the explicit PlayMode test `P2D.PlayMode.Tests.ScreenshotCapture`
     (`-testFilter`); PNGs go to `Logs/Screenshots` or `P2D_SCREENSHOT_DIR`. Look at them after UI changes.
-- UI text is English for now, but the UI can render Thai: `UiKit.Font` loads Noto Sans Thai (Thai + Latin, OFL)
+- UI text is translated: every player-facing string goes through `Loc.T` / `Loc.F` (Domain, English source text as the key, Thai in `ThaiText`; add the Thai line in the same commit — `ThaiCoverageTests` fails on English left on screen). Language is a device setting (`LanguageSetting`, default Thai, switch on the Nest screen). The UI renders Thai: `UiKit.Font` loads Noto Sans Thai (Thai + Latin, OFL)
   from `Art/Fonts/Resources`, falling back to `LegacyRuntime.ttf`. Legacy `Text` has no OpenType shaping, so every
   label gets `ThaiMarkPositioner`, which moves stacked tone marks and lower vowels into place (`docs/Unity-Tech.md` §8).
   Build new text through `UiKit.Label` (or add that component) so Thai stays readable.
